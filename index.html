@@ -1,0 +1,1593 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Inventur</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .icon-button {
+      font-size: 100px;
+      cursor: pointer;
+      color: #4d79ff;
+      transition: transform 0.2s;
+    }
+    .icon-button:hover {
+      transform: scale(1.1);
+    }
+    #inventurArea {
+      display: none;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    th {
+      background: #eee;
+    }
+    input[type="number"] {
+      width: 60px;
+    }
+    .button-group {
+      margin-top: 20px;
+    }
+    .button-group button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .save-btn {
+      background-color: #27ae60;
+      color: white;
+    }
+    .clear-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+  
+@media (max-width: 768px) {
+  .center {
+    height: auto;
+    padding: 40px 10px;
+  }
+
+  .eingabefelder {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .eingabefelder input,
+  .eingabefelder button {
+    width: 100% !important;
+    margin: 10px 0 !important;
+  }
+
+  table, th, td {
+    font-size: 0.9rem;
+  }
+
+  .button-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .button-group button {
+    margin: 10px 0;
+    width: 100%;
+  }
+
+  #showAllButton {
+    width: 100%;
+  }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f9fafb;
+  color: #333;
+}
+
+input, button {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+input:focus {
+  border-color: #4d79ff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(77, 121, 255, 0.4);
+}
+
+table {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th {
+  background: #4d79ff;
+  color: white;
+  position: sticky;
+  top: 0;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.button-group button,
+#showAllButton,
+#inventurAddButton {
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.button-group button:hover,
+#showAllButton:hover,
+#inventurAddButton:hover {
+  opacity: 0.9;
+}
+</style>
+
+<style>
+@keyframes highlightRow {
+  0%   { background-color: #fffacd; }
+  100% { background-color: white; }
+}
+.highlight {
+  animation: highlightRow 2s ease;
+}
+</style>
+
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" sizes="192x192" href="icon-192.png">
+  <meta name="theme-color" content="#4d79ff">
+
+</head>
+<body>
+<div class="center" id="startScreen">
+  <div class="icon-button" id="startInventur">📦</div>
+  <h2>Inventur starten</h2>
+</div>
+
+<div id="inventurArea">
+  <h2>Inventur Upload</h2>
+  <input type="file" id="excelInput" accept=".xlsx, .xls">
+
+<div style="margin-top: 20px;">
+  <button id="showAllButton" style="padding: 10px 16px; font-size: 1rem; background-color: #999; color: white; border: none; border-radius: 5px; cursor: pointer;">
+    Alle anzeigen
+  </button>
+</div>
+
+
+<div class="eingabefelder" style="margin-top: 20px;">
+  <input id="inventurNumber" placeholder="Artikelnummer" list="numberList" style="padding: 10px; width: 25%; margin-right: 10px;">
+  <input id="inventurName" placeholder="Artikelbezeichnung" list="nameList" style="padding: 10px; width: 45%; margin-right: 10px;">
+  <input id="inventurQty" placeholder="Menge" type="number" min="0" style="padding: 10px; width: 15%; margin-right: 10px;">
+  <button id="inventurAddButton" style="padding: 10px 20px;">Hinzufügen</button>
+</div>
+<datalist id='numberList'>
+<option value='8020'>
+<option value='54466'>
+<option value='61055'>
+<option value='61119'>
+<option value='62107'>
+<option value='70014'>
+<option value='70015'>
+<option value='70016'>
+<option value='70017'>
+<option value='70018'>
+<option value='70019'>
+<option value='70023'>
+<option value='70025'>
+<option value='70026'>
+<option value='70033'>
+<option value='70092'>
+<option value='70181'>
+<option value='70211'>
+<option value='70238'>
+<option value='70300'>
+<option value='70335'>
+<option value='70343'>
+<option value='70351'>
+<option value='70386'>
+<option value='70408'>
+<option value='70432'>
+<option value='70467'>
+<option value='70475'>
+<option value='70491'>
+<option value='70513'>
+<option value='70580'>
+<option value='70599'>
+<option value='70602'>
+<option value='70610'>
+<option value='70629'>
+<option value='70637'>
+<option value='70653'>
+<option value='70696'>
+<option value='70750'>
+<option value='70769'>
+<option value='70882'>
+<option value='70912'>
+<option value='70939'>
+<option value='70947'>
+<option value='70963'>
+<option value='70971'>
+<option value='71011'>
+<option value='71021'>
+<option value='71056'>
+<option value='71080'>
+<option value='71099'>
+<option value='71102'>
+<option value='71111'>
+<option value='71112'>
+<option value='71129'>
+<option value='71153'>
+<option value='71196'>
+<option value='71218'>
+<option value='71234'>
+<option value='71250'>
+<option value='71255'>
+<option value='71277'>
+<option value='71285'>
+<option value='71293'>
+<option value='71307'>
+<option value='71315'>
+<option value='71331'>
+<option value='71333'>
+<option value='71358'>
+<option value='71366'>
+<option value='71374'>
+<option value='71382'>
+<option value='71404'>
+<option value='71412'>
+<option value='71420'>
+<option value='71439'>
+<option value='71455'>
+<option value='71471'>
+<option value='71498'>
+<option value='71535'>
+<option value='71536'>
+<option value='71537'>
+<option value='71538'>
+<option value='71552'>
+<option value='71555'>
+<option value='71579'>
+<option value='71587'>
+<option value='71595'>
+<option value='71633'>
+<option value='71668'>
+<option value='71676'>
+<option value='71684'>
+<option value='71692'>
+<option value='71706'>
+<option value='71714'>
+<option value='71722'>
+<option value='71749'>
+<option value='71781'>
+<option value='71840'>
+<option value='71870'>
+<option value='71871'>
+<option value='71889'>
+<option value='71927'>
+<option value='71935'>
+<option value='71943'>
+<option value='71951'>
+<option value='71978'>
+<option value='71994'>
+<option value='72021'>
+<option value='72028'>
+<option value='72036'>
+<option value='72044'>
+<option value='72052'>
+<option value='72060'>
+<option value='72095'>
+<option value='72096'>
+<option value='72109'>
+<option value='72115'>
+<option value='72141'>
+<option value='72168'>
+<option value='72176'>
+<option value='72184'>
+<option value='72214'>
+<option value='72222'>
+<option value='72230'>
+<option value='72249'>
+<option value='72265'>
+<option value='72273'>
+<option value='72281'>
+<option value='72303'>
+<option value='72346'>
+<option value='72350'>
+<option value='72362'>
+<option value='72365'>
+<option value='72370'>
+<option value='72400'>
+<option value='72419'>
+<option value='72439'>
+<option value='72443'>
+<option value='72449'>
+<option value='72478'>
+<option value='72494'>
+<option value='72508'>
+<option value='72510'>
+<option value='72555'>
+<option value='72567'>
+<option value='72575'>
+<option value='72576'>
+<option value='72577'>
+<option value='72591'>
+<option value='72656'>
+<option value='72664'>
+<option value='72699'>
+<option value='72710'>
+<option value='72729'>
+<option value='72737'>
+<option value='72788'>
+<option value='72818'>
+<option value='72834'>
+<option value='72877'>
+<option value='72885'>
+<option value='72907'>
+<option value='72915'>
+<option value='72958'>
+<option value='72966'>
+<option value='72974'>
+<option value='72982'>
+<option value='73008'>
+<option value='73032'>
+<option value='73059'>
+<option value='73075'>
+<option value='73091'>
+<option value='73113'>
+<option value='73122'>
+<option value='73123'>
+<option value='73125'>
+<option value='73149'>
+<option value='73210'>
+<option value='73211'>
+<option value='73245'>
+<option value='73253'>
+<option value='73261'>
+<option value='73288'>
+<option value='73334'>
+<option value='73350'>
+<option value='73380'>
+<option value='73385'>
+<option value='73423'>
+<option value='73431'>
+<option value='73450'>
+<option value='73466'>
+<option value='73467'>
+<option value='73512'>
+<option value='73555'>
+<option value='73566'>
+<option value='73598'>
+<option value='73628'>
+<option value='73644'>
+<option value='73679'>
+<option value='73714'>
+<option value='73725'>
+<option value='73768'>
+<option value='73814'>
+<option value='73822'>
+<option value='73849'>
+<option value='73911'>
+<option value='73946'>
+<option value='73954'>
+<option value='73989'>
+<option value='74004'>
+<option value='74020'>
+<option value='74039'>
+<option value='74040'>
+<option value='74063'>
+<option value='74100'>
+<option value='74101'>
+<option value='74152'>
+<option value='74160'>
+<option value='74187'>
+<option value='74195'>
+<option value='74196'>
+<option value='74197'>
+<option value='74217'>
+<option value='74284'>
+<option value='74292'>
+<option value='74314'>
+<option value='74315'>
+<option value='74316'>
+<option value='74317'>
+<option value='74320'>
+<option value='74357'>
+<option value='74365'>
+<option value='74373'>
+<option value='74381'>
+<option value='74462'>
+<option value='74465'>
+<option value='74470'>
+<option value='74489'>
+<option value='74497'>
+<option value='74535'>
+<option value='74578'>
+<option value='74586'>
+<option value='74594'>
+<option value='74675'>
+<option value='74713'>
+<option value='74756'>
+<option value='74764'>
+<option value='74837'>
+<option value='74888'>
+<option value='74934'>
+<option value='74969'>
+<option value='74985'>
+<option value='74993'>
+<option value='75019'>
+<option value='75078'>
+<option value='75082'>
+<option value='75124'>
+<option value='75167'>
+<option value='75183'>
+<option value='75209'>
+<option value='75221'>
+<option value='75222'>
+<option value='75280'>
+<option value='75286'>
+<option value='75288'>
+<option value='75289'>
+<option value='75329'>
+<option value='75337'>
+<option value='75450'>
+<option value='75469'>
+<option value='75477'>
+<option value='75507'>
+<option value='75510'>
+<option value='75523'>
+<option value='75566'>
+<option value='75574'>
+<option value='75620'>
+<option value='75625'>
+<option value='75639'>
+<option value='75663'>
+<option value='75825'>
+<option value='75842'>
+<option value='75965'>
+<option value='75981'>
+<option value='76104'>
+<option value='76123'>
+<option value='76147'>
+<option value='76163'>
+<option value='76198'>
+<option value='76260'>
+<option value='76261'>
+<option value='76262'>
+<option value='76263'>
+<option value='76264'>
+<option value='76265'>
+<option value='76384'>
+<option value='76422'>
+<option value='76457'>
+<option value='76465'>
+<option value='76473'>
+<option value='76481'>
+<option value='76686'>
+<option value='76708'>
+<option value='76716'>
+<option value='76740'>
+<option value='77101'>
+<option value='77102'>
+<option value='77151'>
+<option value='77216'>
+<option value='77232'>
+<option value='77265'>
+<option value='77267'>
+<option value='77283'>
+<option value='77291'>
+<option value='77321'>
+<option value='77445'>
+<option value='77446'>
+<option value='77447'>
+<option value='77448'>
+<option value='77449'>
+<option value='77453'>
+<option value='77577'>
+<option value='77658'>
+<option value='77712'>
+<option value='77716'>
+<option value='77717'>
+<option value='77718'>
+<option value='77720'>
+<option value='77763'>
+<option value='77835'>
+<option value='77836'>
+<option value='77837'>
+<option value='77838'>
+<option value='77895'>
+<option value='77941'>
+<option value='77968'>
+<option value='77981'>
+<option value='77992'>
+<option value='77993'>
+<option value='77995'>
+<option value='78042'>
+<option value='78077'>
+<option value='78108'>
+<option value='78115'>
+<option value='78166'>
+<option value='78190'>
+<option value='78211'>
+<option value='78336'>
+<option value='78387'>
+<option value='78522'>
+<option value='78530'>
+<option value='78557'>
+<option value='78565'>
+<option value='78700'>
+<option value='78786'>
+<option value='78840'>
+<option value='78875'>
+<option value='78913'>
+<option value='79006'>
+<option value='79057'>
+<option value='79100'>
+<option value='79197'>
+<option value='79219'>
+<option value='79235'>
+<option value='79243'>
+<option value='79278'>
+<option value='79316'>
+<option value='79545'>
+<option value='79618'>
+<option value='79642'>
+<option value='79677'>
+<option value='79715'>
+<option value='79731'>
+<option value='79774'>
+<option value='79790'>
+<option value='79979'>
+<option value='79980'>
+<option value='79983'>
+<option value='79997'>
+<option value='80001'>
+<option value='80003'>
+<option value='80007'>
+<option value='80011'>
+<option value='80021'>
+<option value='80024'>
+<option value='80025'>
+<option value='80034'>
+<option value='80035'>
+<option value='80036'>
+<option value='80037'>
+<option value='80038'>
+<option value='80039'>
+<option value='80040'>
+<option value='80043'>
+<option value='80051'>
+<option value='80053'>
+<option value='80066'>
+<option value='80071'>
+<option value='80075'>
+<option value='80076'>
+<option value='80077'>
+<option value='80078'>
+<option value='80080'>
+<option value='80081'>
+<option value='80082'>
+<option value='80083'>
+<option value='80084'>
+<option value='80092'>
+<option value='80094'>
+<option value='80095'>
+<option value='80096'>
+<option value='80100'>
+<option value='80102'>
+<option value='80104'>
+<option value='80110'>
+<option value='80111'>
+<option value='80115'>
+<option value='80116'>
+<option value='80120'>
+<option value='80121'>
+<option value='80122'>
+<option value='80123'>
+<option value='80129'>
+<option value='80132'>
+<option value='80133'>
+<option value='80134'>
+<option value='80135'>
+<option value='80142'>
+<option value='80144'>
+<option value='80145'>
+<option value='80147'>
+<option value='80149'>
+<option value='80152'>
+<option value='80158'>
+<option value='80161'>
+<option value='80501'>
+<option value='80506'>
+<option value='80508'>
+<option value='80513'>
+<option value='80518'>
+<option value='80519'>
+<option value='80520'>
+<option value='80523'>
+<option value='80530'>
+<option value='80531'>
+<option value='80533'>
+<option value='80534'>
+<option value='80539'>
+<option value='80540'>
+<option value='80542'>
+<option value='80545'>
+<option value='80546'>
+<option value='80547'>
+<option value='80549'>
+<option value='80551'>
+<option value='80552'>
+<option value='80553'>
+<option value='80555'>
+<option value='80556'>
+<option value='80562'>
+<option value='80564'>
+<option value='80574'>
+<option value='80577'>
+<option value='80578'>
+<option value='80580'>
+<option value='80583'>
+<option value='80589'>
+<option value='80592'>
+<option value='80593'>
+<option value='80594'>
+<option value='80595'>
+<option value='80597'>
+<option value='80598'>
+<option value='80612'>
+<option value='80615'>
+<option value='80620'>
+<option value='80622'>
+<option value='80623'>
+<option value='80627'>
+<option value='80628'>
+<option value='80629'>
+<option value='80630'>
+<option value='80632'>
+<option value='80634'>
+<option value='80638'>
+<option value='80641'>
+<option value='80642'>
+<option value='80645'>
+<option value='80646'>
+<option value='80647'>
+<option value='80648'>
+<option value='80649'>
+<option value='80652'>
+<option value='80655'>
+<option value='80656'>
+<option value='80657'>
+<option value='80661'>
+<option value='80664'>
+<option value='80671'>
+<option value='80672'>
+<option value='80675'>
+<option value='80678'>
+<option value='80684'>
+<option value='80685'>
+<option value='80686'>
+<option value='80688'>
+<option value='80691'>
+<option value='80692'>
+<option value='80693'>
+<option value='80695'>
+<option value='80698'>
+<option value='80702'>
+<option value='80703'>
+<option value='80705'>
+<option value='80706'>
+<option value='80708'>
+<option value='80710'>
+<option value='80711'>
+<option value='80712'>
+<option value='80713'>
+<option value='80714'>
+<option value='80716'>
+<option value='80717'>
+<option value='80718'>
+<option value='80719'>
+<option value='80722'>
+<option value='80803'>
+<option value='81100'>
+<option value='81110'>
+<option value='81111'>
+<option value='81599'>
+<option value='82100'>
+<option value='82102'>
+<option value='82105'>
+<option value='82106'>
+<option value='82712'>
+<option value='83100'>
+<option value='84607'>
+</datalist><datalist id='nameList'>
+<option value='FloorZilla daily swing 40cm rot'>
+<option value='Taski Sani Mouldout 750ml'>
+<option value='Haug Spezialbürste Borsti weiß'>
+<option value='Haug WC Bürste weiß 40cm'>
+<option value='VM Sprint Brush Progressive 50 cm grau/weiß'>
+<option value='Vil "Universal" grün Gr.S(50)'>
+<option value='Vil "Universal" grün Gr.M (50)'>
+<option value='Vil "Universal" grün Gr.L (50)'>
+<option value='Gummihandschuh Heavyweight Gr.S Vileda Latexhandschuh Robust'>
+<option value='Gummihandschuh Heavyweight Gr.M Vileda Latexhandschuh Robust'>
+<option value='Vil "HeavyWeight" grün Gr.L'>
+<option value='Handschuh Heim & Haus Gr.L Vileda'>
+<option value='Glasfee 1l'>
+<option value='Glasfee ECO 1l (12)'>
+<option value='Saugtüten Nilco IC215 10 Stk.'>
+<option value='Muril Schmutzbrecher 10l'>
+<option value='Milizid Citro 10l'>
+<option value='Themodur-Satina 5 Liter'>
+<option value='Copex Grundreiniger 1 Liter'>
+<option value='CC-R1000 750ml'>
+<option value='Rabbasol Spezial 10 Liter'>
+<option value='Müllsack 120 l weiß'>
+<option value='Attila Krustenbrecher 2x1l'>
+<option value='Procur Konzentrat 1 Liter'>
+<option value='Gliz Metallic'>
+<option value='Kiehl Eloxa prima 750ml (6)'>
+<option value='Milostar 500ml'>
+<option value='3m Superpad 508mm 20" grün'>
+<option value='Kiehl Parketto-Clean-Konz. 1l'>
+<option value='R 1000 10l'>
+<option value='Forex Intensivreiniger 1l (12)'>
+<option value='Padscheibe Legno 41 cm 16"'>
+<option value='Bodenglanz 750 ml'>
+<option value='Sebo Staubsauger 370 Evo'>
+<option value='Sprühex  750 ml'>
+<option value='Sani-Flow Rohrreiniger 1 Liter'>
+<option value='Eimer 6 Liter Rot, Blau, Gelb Vermop'>
+<option value='Scandic Mono Halter 120 cm'>
+<option value='Scandic Mono Ceran 120 cm'>
+<option value='Kehrset'>
+<option value='Müllsack 120 l T70 Blau'>
+<option value='Besen Elaston 50 cm Rot'>
+<option value='Magic Maxx 5l (2)'>
+<option value='Bendurol Forte'>
+<option value='Buzil BUZ Defoam G478 1l (12)'>
+<option value='Easy Glide Unger 1 Liter'>
+<option value='Eilfix Almo-Ex 1l (12) Steinreiniger'>
+<option value='Isi Maxx'>
+<option value='Taski Jontec Tensol F3c 1l (6)'>
+<option value='Sprintmop Basic 40cm'>
+<option value='VM Sprint Plus 50cm'>
+<option value='Alustiel 140cm'>
+<option value='VM Gerätehalterung Varietta I #5541'>
+<option value='VM Equipe Gummi f. Stielhalter 20-28mm'>
+<option value='Aufnehmer weiß'>
+<option value='Handsprüher Neutral'>
+<option value='Kiehl Trend 5l (2)'>
+<option value='3M Superpad 406mm 16" grün'>
+<option value='Besen Arenga 40 cm'>
+<option value='Bad-Putzer blau oder gelb'>
+<option value='3M Scotch-Brite Pflegeschwamm grün/weiß(10)'>
+<option value='Brittex-Tuch Lochtuch PVA natur 35x40cm'>
+<option value='Eimer 5 Liter'>
+<option value='Baueimer schwarz 12 Liter'>
+<option value='Sigella 10 Liter'>
+<option value='VM Halter 80cm (5) #0083'>
+<option value='VM Sprint Plus 40cm '>
+<option value='Staubwedel Synthetik 126cm 3-farbig Teleskopstiel'>
+<option value='VM Feuchtwischmop Basic 60cm'>
+<option value='Feuchtwisch-Bezug 80 cm Basic Vermop'>
+<option value='Feuchtwisch-Bezug 110 cm'>
+<option value='Feuchtwisch-Bezug 130 cm'>
+<option value='Fensterwischer 35 cm'>
+<option value='Fensterwischer 45cm'>
+<option value='Ung. Wischerschiene S 55cm'>
+<option value='Einwasch-Träger (Fell-Halter) 45cm'>
+<option value='Fell 45 cm Vermop'>
+<option value='Lobacare SportCare 10l'>
+<option value='Gummi Wischer 40 cm Beco'>
+<option value='Handschuh Lightweight S Vil.'>
+<option value='Handschuh Lightweight M Vil.'>
+<option value='Handschuh Lightweight L Vil.'>
+<option value='Vil LightWeight" beige Gr.XL'>
+<option value='Drucksprüher Floortop'>
+<option value='Wasserschieber Holz 40cm'>
+<option value='Buzil G440 1l'>
+<option value='Tempex Ultra 10l'>
+<option value='Saugtüten Jetvac'>
+<option value='Handfeger Arenga'>
+<option value='Handspachtel mit Holzgriff'>
+<option value='Professional System3 Ariel 20l'>
+<option value='Besenstiel Beco Holz'>
+<option value='Professional System4 Ariel 20l'>
+<option value='Hygiene Beutel per 100 Stk.'>
+<option value='Kehrblech'>
+<option value='HM Bacillol Tissues 100Tü (12)'>
+<option value='Leder im Fell'>
+<option value='Magnetic Wischer'>
+<option value='Twister Pad grün 534mm  21" (2)'>
+<option value='Müllsack 120 l Blau'>
+<option value='Abfallsack 120l 60my schwarz'>
+<option value='Unimagic 1 Liter'>
+<option value='3M Superpad 203mm 8" rot (10)'>
+<option value='Padscheibe grün 310mm  12"'>
+<option value='Maxx Into Citrus 2* 1l (12)'>
+<option value='Incidin Plus 2l (3)'>
+<option value='3M Superpad 406mm 16" schwarz'>
+<option value='3M Superpad 406mm 16" rot (5)'>
+<option value='Halbschuh Riyoyo Größe 10'>
+<option value='Into Citrus 10l'>
+<option value='Molkereibürste Nylon'>
+<option value='Dopomat'>
+<option value='Padscheibe 46 cm Schwarz 18"'>
+<option value='Somat Spezial-Salz1,2kg Pack'>
+<option value='Stielbürsten Kunststoff Haug'>
+<option value='HOLZSTIEL 1,4 M OHNE GEWINDE'>
+<option value='Ung. Trim 10+1 10cm'>
+<option value='Dip n Clean Handball Harzentferner 5L'>
+<option value='Sterillium Classic'>
+<option value='CC-Parkett u. Kork Glanz 750ml'>
+<option value='Padscheibe 33 cm blau 13"'>
+<option value='Saugtüten Cleanfix S10'>
+<option value='Teleskopstange 2 Meter'>
+<option value='Teleskopstange 4m'>
+<option value='CC-Parkett-/Korkreiniger 750ml'>
+<option value='Milizid Citro 1l'>
+<option value='Super-Pad Janex rot 530mm/21"'>
+<option value='Kiehl Dopomat-brillant 10l'>
+<option value='Super-Pad Janex rot 460mm/18" Innenloch 228mm'>
+<option value='HM Sterillium Virugard 500ml'>
+<option value='Vollpflege 750ml Pallmann'>
+<option value='Milizid Lemonfresh 1l'>
+<option value='Taski Jontec 300 F4a 1l (6)'>
+<option value='Buzil Planta Bucasan Hit P921 1l'>
+<option value='Saugtüten Nilco S20 10 Stück'>
+<option value='Fahrwagen Einfach'>
+<option value='WC-Papier Weiß 2-lagig'>
+<option value='VM Sprint Mop White Magic 40cm'>
+<option value='Hängewarnschild Vermop'>
+<option value='Into Citrus 1l'>
+<option value='VM Sprint Mop White Magic 50cm'>
+<option value='Wischer / Schrubber 30 cm Beco weiß 30cm Wischer Beco 30cm'>
+<option value='Wischer / Schrubber 40 cm Beco'>
+<option value='Maxx Into Active 1l'>
+<option value='Wasserschieber Holz 50cm'>
+<option value='Prisma Steinprotektor 5 Liter'>
+<option value='Indur Maxx 1l (12)'>
+<option value='Maxx Indur S 1l'>
+<option value='Easy Quick A Konzentrat 1l'>
+<option value='Feuchtwisch-Halter 160cm'>
+<option value='Ariel System 1 flüssig 20l'>
+<option value='Desifor Forte AF'>
+<option value='Wassereinfüllhilfe Vermop'>
+<option value='Fahrwagen Doppel'>
+<option value='Pilotenjacke blau'>
+<option value='DSC Compact Tabs 5in1 Pack'>
+<option value='Staubbiene '>
+<option value='Haushaltsrollen'>
+<option value='Mili Caribic 200ml (12)'>
+<option value='Mistral 1 Liter'>
+<option value='Feuchtwisch-Bezug 50 cm Brush'>
+<option value='Müllbeutel 60 - 80 l weiß'>
+<option value='Handpad grün '>
+<option value='Streusalz 50 Kg'>
+<option value='Ung. Wischergummi soft 35cm'>
+<option value='Ung. Wischergummi soft 45cm'>
+<option value='Ung. Wischergummi soft 55cm'>
+<option value='Milly Allzweckreiniger 1 Liter'>
+<option value='VM Presse VK4'>
+<option value='Bacollol AF'>
+<option value='Padscheibe 46 cm Blau 18"'>
+<option value='Padscheibe 460mm weiß 18"'>
+<option value='Amidol 500ml'>
+<option value='Hitachi Schlauch'>
+<option value='Hitachi Verlängerungsrohr'>
+<option value='Tana Tanex vivaceram 5l'>
+<option value='Feuchtwisch-Bezug 40cm Ceran'>
+<option value='Schaumsprühkopf Bode'>
+<option value='Schirocco Basic 5l (2)'>
+<option value='WC-Garnitur Topf-Form (30)'>
+<option value='Heizkörperbürste U-Form 37cm'>
+<option value='Urinalbürste'>
+<option value='Vacu-Fresh 10Btl. à 5g (10)'>
+<option value='HM Einmalpumpe langer Auslauf 500ml'>
+<option value='Schirocco Clean 1l'>
+<option value='Novo Pen-Off 200ml (12)+ Schreibtischreiniger'>
+<option value='Novo Pen-Off 500ml'>
+<option value='Herren Latzhosen Brüggershemke'>
+<option value='Herren Jacke Übergang'>
+<option value='Herren Latzhose Dipasch'>
+<option value='Bendurol Maxx '>
+<option value='Maxx Bendurol 2 5l'>
+<option value='Tuklar'>
+<option value='Heizkörperbürste 75cm (10)'>
+<option value='Kodiak Sanitär 5l'>
+<option value='SamoLind 100ml (12)'>
+<option value='SamoGlove 100ml (12)'>
+<option value='VM Presseneinlage #886510'>
+<option value='Grizzly Unterhaltsreiniger 5 Liter'>
+<option value='CimoCid Sensitive 1l (6)'>
+<option value='Steinglanz P323 1 Liter'>
+<option value='Vileda Schwamm Grün'>
+<option value='KC-Handtuchrolle weiß Airflex '>
+<option value='Conductive Star'>
+<option value='Fensterklingen 1 Stück'>
+<option value='Energy Booster 1l (12)'>
+<option value='Magic Oil Care 750 ml'>
+<option value='Spinnfegerkopf'>
+<option value='Saugtüten Whisper V8 10S'>
+<option value='Fresh Orange 500ml (6)'>
+<option value='Eimer Oval'>
+<option value='Seifencreme 500 ml'>
+<option value='FloorZilla daily swing 40cm blau'>
+<option value='Padscheibe 41cm Braun SPP'>
+<option value='Microfastertuch grün'>
+<option value='Streusalz 25 Kilogramm'>
+<option value='Papierhandtuch rein Natur einlagig'>
+<option value='VM Wringboy Eimer 15l #9590'>
+<option value='Besen, Arenga 50'>
+<option value='Besen, Mischhaar 50'>
+<option value='BECOnnect 2.0 Saalbesen 100cm'>
+<option value='Schrankfeger 130cm (10)'>
+<option value='Superpad 457mm 18" rot'>
+<option value='Superpad 533mm 21"weiß'>
+<option value='Superpad 533mm 21" rot'>
+<option value='Saugtüten Sebo 360 10 Stück'>
+<option value='Nilco-Saugtüten S20 / S8 10er'>
+<option value='Sebo-Saugtüten 360/370 10er'>
+<option value='Micro-Hygienefilter'>
+<option value='Numatic Filter Pods 10Stk'>
+<option value='3M Superpad 505mm 20" rot (5)'>
+<option value='Einwasch-Träger (Fell-Halter) 35cm'>
+<option value='Fell 35 cm Vermop'>
+<option value='Sicherheitsschuh S3'>
+<option value='Taski Dust Cloth 100Stk in ein Pack'>
+<option value='Vil Staubbindetuch 24x60cm (20)'>
+<option value='Atemschutzmaske FFP2'>
+<option value='Meiko Trapezwischer 60cm'>
+<option value='Dr.Schnell Handsprüher Forol 600ml'>
+<option value='Loba Cleaner 1 Liter'>
+<option value='Rapido 500ml (6)'>
+<option value='CC-PU-Reiniger 5l'>
+<option value='Quick Tric Concentrate 1l (12)'>
+<option value='Pad-Sch.41cm braun'>
+<option value='Padscheibe 410mm beige'>
+<option value='Haug Spachtel PP weiß'>
+<option value='3M Superpad 330mm 13" rot (5)'>
+<option value='Lodan Maxx 5l (2)'>
+<option value='Floortop 10l'>
+<option value='Petra 1l '>
+<option value='Sprühköpfe gelb'>
+<option value='VM Warnschild (6) Rutschgefahr'>
+<option value='Sebo-Saugtüten G2 10er'>
+<option value='3M Superpad 355mm 14" rot (5)'>
+<option value='Somat Klarspüler 750ml'>
+<option value='Vikan Easy shine kit Glasinnenreinigungset'>
+<option value='Persil Pulver 1,33 kg Pack'>
+<option value='Überlaufbürste'>
+<option value='Vil Padmaster eckig grau (10)'>
+<option value='Glasfee ECO 10l'>
+<option value='Papierhandtücher 2-lagig'>
+<option value='Tork Reflex WT weiß 20x35 M4 Wischtuch1lg 6Rllà300m Tissue M'>
+<option value='Floortop 1l'>
+<option value='Floortop ECO 10l'>
+<option value='Milizid ECO 1l (12)'>
+<option value='Milizid ECO 10l'>
+<option value='Handschuhe Neopren'>
+<option value='Perocid 1l'>
+<option value='Vil Handpad Heavy Duty schwarz'>
+<option value='Feuchtwisch-Bezug Twixter Tronic light 40cm'>
+<option value='Feuchtwisch-Halter Twixter 40 cm'>
+<option value='Putzlappen'>
+<option value='Putzlappen aus Baumwolle 10kg'>
+<option value='Überwurfschürze Gr.1-3'>
+<option value='CC-PU-Reiniger 750ml (6)'>
+<option value='Gastro Pur 10l'>
+<option value='Gastro Pur 1l'>
+<option value='Gastro Pur Eco 1l (12)'>
+<option value='Papiergreifzange Nifty'>
+<option value='Aschesammler'>
+<option value='Rapa Classic Vollwaschm. 20kg'>
+<option value='BECOnnect 2.0 Saalbesen 80cm Elaston Holzkörper roh'>
+<option value='Besen Mischhaar 60 cm'>
+<option value='Vil Micro Tuff plus blau'>
+<option value='WC-Bürste m.Randreiniger (100)'>
+<option value='Kiehl Diwa-Pronto 10l Saurer Klarspüler'>
+<option value='Rabbasol H4 12 Kg'>
+<option value='Intensivreiniger 750ml Für Holz & Kork'>
+<option value='CC-Vollpflege matt 750ml (6)'>
+<option value='Müllbeutel 60 l weiß'>
+<option value='Müllbeutel Premium 60 l '>
+<option value='Tuch gelb Grizzly '>
+<option value='Tuch blau  Grizzly'>
+<option value='Tuch rot Grizzly '>
+<option value='Tuch grün Grizzly '>
+<option value='Saugtüten Nilfisk Backum'>
+<option value='Saugtüten Nilco 1207 10 Stück'>
+<option value='Milifix 1l'>
+<option value='Padhalter mit Handgriff Vileda'>
+<option value='Fleckenpad Blau'>
+<option value='Alustiel Ausziehbar Vermop'>
+<option value='Besen Mischhaar 100 cm'>
+<option value='Kehrschaufel Schwarz 22cm'>
+<option value='3M Superpad 406mm 16" weiß'>
+<option value='SamtaMed 100ml (12)'>
+<option value='Tana Apesin Waschmittel'>
+<option value='Rapa Extra desinfizierend 12kg'>
+<option value='Dosierkappen'>
+<option value='Nilco Staubsauger S8 '>
+<option value='Handfeger'>
+<option value='Dreiturm Torma BAC  1l'>
+<option value='Easy Quick Konzentrat 1l (12)'>
+<option value='Sprintmop Basic 50cm'>
+<option value='Eimer 17 Liter Rot Vermop'>
+<option value='Sidol Metallpolish 250 ml'>
+<option value='VM Messbecher mit Skala 500ml'>
+<option value='Dosierbecher 500ml Dr.Schnell'>
+<option value='Messbecher 250ml mit Skala VM'>
+<option value='Messbecher 3l Dr.Schnell'>
+<option value='Rapido Kaugummi-Ex 500ml Spray'>
+<option value='Hygiene Wasserschieber 45cm'>
+<option value='Hitachi Papierfilterbtl. 2lg'>
+<option value='Griff Edelstahl Vermop'>
+<option value='Onemü 1l'>
+<option value='Easy Clean HD+  530mm /21 Zoll weiß Pad'>
+<option value='Easy Clean HD+ 500mm/20 zoll weiß Pad'>
+<option value='3M Melamin Pad 510mm 20" Spezialpad (5)'>
+<option value='Milor 500ml'>
+<option value='Rapido 10x1kg'>
+<option value='Easy Quick N 1 l'>
+<option value='Forol 1l'>
+<option value='Buzil Planta Universal  P910 1l (12)'>
+<option value='Forol ECO 1l (12)'>
+<option value='Schrubber '>
+<option value='Milibac N'>
+<option value='VM Toplock Glassman (10) #2743'>
+<option value='Ecolab Nachfüllflasche 1l'>
+<option value='Müllbeutel 30 l weiß'>
+<option value='Müllbeutel 30 Liter 50 Stk. Premium Deiss (36021)'>
+<option value='Meiko Vlies-Allzwecktuch weiß'>
+<option value='Sanitärreiniger Scalex 10 Liter'>
+<option value='Fleck-ex PRO17 500ml'>
+<option value='Solid Safety Tough Dots'>
+<option value='Graffitti GR3 5 Liter'>
+<option value='Hygiene Wasserschieber 55cm'>
+<option value='Mr.Mint Bio-Geruchs-Stop 1l'>
+<option value='WC-Bürste PPN weiß Kunststoff, Rundkopf (100)'>
+<option value='Griff Lockhead Vermop'>
+<option value='3M Graffiti GR3000 500ml (4)'>
+<option value='Gelenkteil Vermop Teleskopstange'>
+<option value='NeomaxxGMS 10 Liter'>
+<option value='Sprintmop Tronic 40cm'>
+<option value='Damenkittel Grün'>
+<option value='Desifor Forte AF'>
+<option value='Seifencreme rose 10 l'>
+<option value='WC-Papier Basic 3-lagig'>
+<option value='Abstauber Maler-Qualität (12)'>
+<option value='Sator 1l (12)'>
+<option value='Reflex Microtuch'>
+<option value='Sprintmop Tronic 50cm'>
+<option value='CWS BestFoam Neutral 500ml'>
+<option value='Fleckenradierer 3M Scotch-Br.'>
+<option value='3M Superpad 508mm 20" weiß'>
+<option value='Marmor- & Granitpolish 1 Liter'>
+<option value='Edelsteinseife HMK 324 1Ltr. Möller-Chemie'>
+<option value='Grundreiniger R155 1 Liter'>
+<option value='Tana Longlive Conductan'>
+<option value='Rabbasol'>
+<option value='3M Superpad 432mm 17" rot (5)'>
+<option value='Superpad 432mm 17" grün'>
+<option value='Handsprüher Milizid'>
+<option value='On Top'>
+<option value='Forol 10l'>
+<option value='Staubwedel Synthetik'>
+<option value='Torvan 1l'>
+<option value='Padscheibe 31 cm Rot 12"'>
+<option value='Reshine Sport 10l (Harzentferner)'>
+<option value='Satin-Star'>
+<option value='Müllsack 1000 Liter Deiss (99095)'>
+<option value='Frostschutz für Scheiben 1 Ltr.'>
+<option value='Dr.Schnell Schaumkanone'>
+<option value='VM Halteklammer Kunststoff für Abfallsack #876905'>
+<option value='Liebelt Geschirrhandtuch'>
+<option value='Taski Jontec Luna F2d 5Ltr.'>
+<option value='Woca Ölrefresher natur 2,5 Liter'>
+<option value='Woca Holzbodenseife 5l (4)'>
+<option value='Liebelt SprühFl.sche blau Unterhaltsreiniger 600 ml'>
+<option value='Liebelt SprühFl.sche rot 600 ml'>
+<option value='Sprintmop Liebelt Grizzly blau/rot  40cm'>
+<option value='Liebelt Teleskopstiel 2teilig'>
+<option value='Liebelt FW-Halter 40cm'>
+<option value='Liebelt Spültuch blau/grün'>
+<option value='Liebelt Fenstertuch'>
+<option value='Edelstahlspirale 40g'>
+<option value='Phy Stephalen Vital 1l (10)'>
+<option value='CPE Überziehschuhe blau (50)'>
+<option value='Dreiturm Seifenspender Lavalon'>
+<option value='Holz-Seife 750ml (6)'>
+<option value='Easy Care Bangkirai'>
+<option value='Sprintmop Liebelt Grizzly blau/rot 50cm'>
+<option value='CC-Teppichreiniger 750ml (6)'>
+<option value='Vileda Teleskopstiel blau 50-90cm'>
+<option value='Hornilla Konz. 1l (12)'>
+<option value='Alustiel Beconnect'>
+<option value='Wäschenetz 40Ltr. rot Vermop'>
+<option value='Papier-Picker 100cm Unger Unger'>
+<option value='Lavidol 1l (12)'>
+<option value='Tempex Xtreme'>
+<option value='Padscheibe Melamin 406mm 16' 3M Padscheibe Melamin 41cm 3M'>
+<option value='Tempex XPRESS 10l Hochleistungsgrundreiniger'>
+<option value='Gummi Wischer 50cm Beco'>
+<option value='Einmalhandschu. Nitril Gr.S'>
+<option value='Padscheiben grün 46cm3M'>
+<option value='Padscheibe rot 381 mm 15" 3M'>
+<option value='T-Shirt'>
+<option value='Nitras Textil-Warnweste neongelb'>
+<option value='Herren Bundhose Dipasch'>
+<option value='Damen Kasack Dipasch weiß'>
+<option value='Schutzbrille 17,5x7cm (20x10)'>
+<option value='Puro Schutzbrille (25x12)'>
+<option value='Vil.Teleskopstiel blau 100-180cm blau Vil.Teleskopstiel blau'>
+<option value='Vollpflege matt 5 Liter Vollpflege matt 5 Ltr.'>
+<option value='Neutralreiniger Pallmann'>
+<option value='Maxx Magic 2 1l (12)'>
+<option value='Maxx Magic 2  5 Liter'>
+<option value='Milizid Lemonfresh 10l'>
+<option value='Maxx Magic S 1l'>
+<option value='Pad Super rot 21' für 53 u.55cm'>
+<option value='Liebelt FW-Halter 50cm'>
+<option value='Sanierer Waschmaschine 1 Liter'>
+<option value='Glasfaserstiel '>
+<option value='Sweatshirt Dipasch alle Größen'>
+<option value='Grizzly Desinfektion 1 Ltr. AFZ'>
+<option value='Saugtüten Kärcher NT561 ECO Kärcher'>
+<option value='Latzhosen Dipasch Dipasch'>
+<option value='Perocid 10l'>
+<option value='Fl.mingo Stream Jeikner 150cm'>
+<option value='Sauba Steckdosenbürste UNO blau/grau'>
+<option value='Forsan 1l (12)'>
+<option value='Maxx Indur S 1l'>
+<option value='Maxx Brial S 1 Liter Ecolab'>
+<option value='Incidin Pro 2 Liter'>
+<option value='On Top Samt'>
+<option value='Sprintmop Progressive 50cm '>
+<option value='Bendurol Ultra 5 Ltr. Benduro-Ultra 5 Ltr.'>
+<option value='Kiehl Torvan Konz. 10l'>
+<option value='Rapa Plus Desinf. Professionell 20kg+'>
+<option value='Rapa-Plus 20 Kg. Dr. Schnell Rapa-Plus 20 KG. Waschmittel Dr'>
+<option value='Sprintmop Progressive 40cm'>
+<option value='Kiehl Powerfix-Gel 1l (6)'>
+<option value='Unger Fell grün 45cm Monsoon'>
+<option value='Saugtüten Kärcher T12/1'>
+<option value='Pad-Gitterleinen 3M 406mm 100'>
+<option value='Tempex-Ultra 10 Ltr.'>
+<option value='Parkett & Korkglanz 5 Ltr. Parkett & Korkglanz 5 Ltr.'>
+<option value='TOPCare Matt 10l'>
+<option value='Saugtüten Nilco Micro'>
+<option value='Vileda Staubmop Synthetik 60cm'>
+<option value='Vileda Staubmop Klapphalter 60cm'>
+<option value='Mistral Wood 1 Liter Dr. Schnell'>
+<option value='Schirocco Clean 10 Ltr.'>
+<option value='Schirocco Forte 10l'>
+<option value='Levante 1l'>
+<option value='Levante Eco 10l'>
+<option value='FW.Bezüge Vileda Base Micro 50cm Vileda'>
+<option value='Grillmaster 600 ml Buzil'>
+<option value='Baumwollhanschuhe Handschuh Stoff'>
+<option value='Ulmanol D 10 Ltr. Fa. Scheck, Ulm'>
+<option value='Padscheiben grün 53cm 21''>
+<option value='Ariel System 7 flüssig 20l'>
+<option value='Ariel System 8 flüssig 20l'>
+<option value='CWS BestCreamStandard 500 ml'>
+<option value='Forolfee 500ml (6)'>
+<option value='Vileda Alustiel Clip blau 150cm'>
+<option value='CimoCid Sensitive'>
+<option value='Desifor One Flächendesinf.'>
+<option value='Desifor A 10l'>
+<option value='Levante 10l'>
+<option value='Mundschutz weiss u. blau verschiedene Lieferanten'>
+<option value='Dosierpumpe Dr. Schnell für 10 Ltr. Kanister Desinfektionrei'>
+<option value='Lobacare Parkettöl 1 Liter'>
+<option value='HM Dismozon Plus'>
+<option value='Copex 10 Liter'>
+<option value='Micro Schutzanzug Tector Schutzanzug'>
+<option value='Melamin Combo Pad 13'' 325 mm grau/weiß  Fa. Weber'>
+<option value='Aktivin RubStar Handwaschpaste 1000ml'>
+<option value='Aktivin PuraSkin Waschlotion 1000 ml'>
+<option value='TopCare Floorfit 10 Liter'>
+<option value='Handsprüher Lavidol weiss'>
+<option value='Nilco S8'>
+<option value='Desifor Plexifee 500 ml'>
+<option value='Bioline Müllbeutel 30l 500x600 natur 20stk'>
+<option value='Mehrwegbehälter Blau  54Liter'>
+<option value='Handsprüher Levante'>
+<option value='CleanMotion Werkstattreiniger 1 Liter'>
+<option value='Melamin Combo Pad 530mm 21' grau-weiß'>
+<option value='Rabbasol Autoschaumwäsche'>
+<option value='Makita Saugtüten für'>
+<option value='Vileda Base Loop Blau 40cm'>
+<option value='Enteiserspray 500ml'>
+<option value='Milifix  10 Ltr.'>
+<option value='bestfour Geräteentkalker 500ml'>
+<option value='Handtuchrolle 2 Lg. Katrin  Classic'>
+<option value='Scandic Teleskopstiel Vermop'>
+<option value='Juwex Pad Diamant 510 mm 20'''>
+<option value='Reinigungsw. Varietta Plus2'>
+<option value='Milifix-Ultra  1 Ltr.'>
+<option value='Sprintmop Tronic light 40cm'>
+<option value='SprintmopTronic light 50cm'>
+<option value='Pad Microfaser Glit 406mm 16' weiss'>
+<option value='Reinigungsw. Varietta'>
+<option value='Saugschlauch  S8 / S20'>
+<option value='Kehrgarnitur 20cm mit Lippe'>
+<option value='Berry Neutralreiniger 1Liter'>
+<option value='Lemon Neutralreiniger mit duft'>
+<option value='Mehrweg-Stapelbehälter mit Klappdeckel 56 Liter'>
+<option value='Haug Alustiel 145cm PHB blaue Kappe'>
+<option value='Haug Wasserschieber 62cm Kunststoff'>
+<option value='Bodensaugdüse Nilco S8 / S20'>
+<option value='Stoko Estesol Classic 1 Ltr.'>
+<option value='KCP Scott Control Slim 1 lg'>
+<option value='Augenspülflasche Plum 500ml.'>
+<option value='Mehrweg-Stapelbehälter mit Klappdeckel 77 Liter'>
+<option value='Etikettenhalter für Mehrwegbehälter'>
+<option value='Milizid Cool Breeze 1l'>
+<option value='Nilco Saugrohr S8 schwarz Metall'>
+<option value='Milizid Cool Breeze 10l'>
+<option value='Einmalhandschuhe Nitril Gr.M'>
+<option value='Einmalhandschu. Nitril Gr.M'>
+<option value='Einmalhandschu. Nitril Gr.L'>
+<option value='Fahrwagen Mistral Sprint '>
+<option value='Einmalhandschuhe Nitril Gr. L'>
+<option value='Samolind Sensitive 2in1'>
+<option value='Kareima Bezug 50cm'>
+<option value='Pad SSP Plus braun 432mm 17"'>
+<option value='Bioline Müllbeutel 20l'>
+<option value='Einmalhandschu. Nitril Gr.XL'>
+<option value='Gummi-Schürze 90x120cm 500my'>
+</datalist>
+  <div class="button-group">
+    <button id="saveInventurExcel" class="save-btn">Liste als Excel speichern</button>
+    <button id="clearList" class="clear-btn">Liste löschen</button>
+  </div>
+  <table id="picklist">
+    <thead>
+      <tr>
+        <th>Nummer</th>
+        <th>Bezeichnung</th>
+        <th>SOLL</th>
+        <th>IST</th>
+        <th>Differenz</th>
+        <th>Aktion</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+document.getElementById('startInventur').addEventListener('click', () => {
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('inventurArea').style.display = 'block';
+});
+
+document.getElementById('excelInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, {type: 'array'});
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
+    const tbody = document.querySelector('#picklist tbody');
+    tbody.innerHTML = '';
+
+    const rowsToStore = [];
+
+    json.slice(1).forEach(row => {
+      const [nummer, bezeichnung, sollMenge] = row;
+      if (!nummer || !bezeichnung || !sollMenge) return;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${nummer}</td>
+        <td>${bezeichnung}</td>
+        <td>${sollMenge}</td>
+        <td><input type="number" value="0" min="0"></td>
+        <td>0</td>
+        <td><button class="delete-btn">🗑️</button></td>
+      `;
+      tr.querySelector('input').addEventListener('input', function() {
+        const ist = parseInt(this.value) || 0;
+        const soll = parseInt(sollMenge) || 0;
+        tr.children[4].textContent = ist - soll;
+        tr.dataset.ist = ist;
+        saveToLocalStorage();
+      });
+      tr.querySelector('.delete-btn').addEventListener('click', () => {
+        tr.remove();
+        saveToLocalStorage();
+      });
+
+      tr.dataset.nummer = nummer;
+      tr.dataset.bezeichnung = bezeichnung;
+      tr.dataset.soll = sollMenge;
+      tr.dataset.ist = 0;
+      tbody.insertBefore(tr, tbody.firstChild);
+    tr.classList.add('highlight');
+    tr.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      rowsToStore.push({nummer, bezeichnung, soll: sollMenge, ist: 0});
+    });
+
+    localStorage.setItem('inventurList', JSON.stringify(rowsToStore));
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function saveToLocalStorage() {
+  const rows = Array.from(document.querySelectorAll('#picklist tbody tr')).map(row => ({
+    nummer: row.dataset.nummer,
+    bezeichnung: row.dataset.bezeichnung,
+    soll: row.dataset.soll,
+    ist: row.dataset.ist || 0
+  }));
+  localStorage.setItem('inventurList', JSON.stringify(rows));
+}
+
+function loadFromLocalStorage() {
+  const data = localStorage.getItem('inventurList');
+  if (!data) return;
+  const items = JSON.parse(data);
+  if (!items.length) return;
+
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('inventurArea').style.display = 'block';
+
+  const tbody = document.querySelector('#picklist tbody');
+  tbody.innerHTML = '';
+
+  items.forEach(item => {
+    const ist = item.ist || 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.nummer}</td>
+      <td>${item.bezeichnung}</td>
+      <td>${item.soll}</td>
+      <td><input type="number" value="${ist}" min="0"></td>
+      <td>${ist - item.soll}</td>
+      <td><button class="delete-btn">🗑️</button></td>
+    `;
+    tr.dataset.nummer = item.nummer;
+    tr.dataset.bezeichnung = item.bezeichnung;
+    tr.dataset.soll = item.soll;
+    tr.dataset.ist = ist;
+
+    tr.querySelector('input').addEventListener('input', function() {
+      const newIst = parseInt(this.value) || 0;
+      tr.children[4].textContent = newIst - item.soll;
+      tr.dataset.ist = newIst;
+      saveToLocalStorage();
+    });
+
+    tr.querySelector('.delete-btn').addEventListener('click', () => {
+      tr.remove();
+      saveToLocalStorage();
+    });
+
+    tbody.insertBefore(tr, tbody.firstChild);
+    tr.classList.add('highlight');
+    tr.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+document.getElementById('clearList').addEventListener('click', () => {
+  if (confirm('Möchtest du die Liste wirklich löschen?')) {
+    localStorage.removeItem('inventurList');
+    document.querySelector('#picklist tbody').innerHTML = '';
+    location.reload();
+  }
+});
+
+document.getElementById('saveInventurExcel').addEventListener('click', () => {
+  const rows = Array.from(document.querySelectorAll('#picklist tbody tr')).map(row => {
+    return {
+      'Artikelnummer': row.children[0].textContent,
+      'Bezeichnung': row.children[1].textContent,
+      'SOLL': row.children[2].textContent,
+      'IST': row.children[3].querySelector('input').value,
+      'Differenz': row.children[4].textContent
+    };
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Inventur");
+
+  XLSX.writeFile(workbook, "Inventur_Liste.xlsx");
+});
+
+document.addEventListener('DOMContentLoaded', loadFromLocalStorage);
+</script>
+
+<script>
+const artikelMap = {"8020": "FloorZilla daily swing 40cm rot", "54466": "Taski Sani Mouldout 750ml", "61055": "Haug Spezialbürste Borsti weiß", "61119": "Haug WC Bürste weiß 40cm", "62107": "VM Sprint Brush Progressive 50 cm grau/weiß", "70014": "Vil \"Universal\" grün Gr.S(50)", "70015": "Vil \"Universal\" grün Gr.M (50)", "70016": "Vil \"Universal\" grün Gr.L (50)", "70017": "Gummihandschuh Heavyweight Gr.S Vileda Latexhandschuh Robust", "70018": "Gummihandschuh Heavyweight Gr.M Vileda Latexhandschuh Robust", "70019": "Vil \"HeavyWeight\" grün Gr.L", "70023": "Handschuh Heim & Haus Gr.L Vileda", "70025": "Glasfee 1l", "70026": "Glasfee ECO 1l (12)", "70033": "Saugtüten Nilco IC215 10 Stk.", "70092": "Muril Schmutzbrecher 10l", "70181": "Milizid Citro 10l", "70211": "Themodur-Satina 5 Liter", "70238": "Copex Grundreiniger 1 Liter", "70300": "CC-R1000 750ml", "70335": "Rabbasol Spezial 10 Liter", "70343": "Müllsack 120 l weiß", "70351": "Attila Krustenbrecher 2x1l", "70386": "Procur Konzentrat 1 Liter", "70408": "Gliz Metallic", "70432": "Kiehl Eloxa prima 750ml (6)", "70467": "Milostar 500ml", "70475": "3m Superpad 508mm 20\" grün", "70491": "Kiehl Parketto-Clean-Konz. 1l", "70513": "R 1000 10l", "70580": "Forex Intensivreiniger 1l (12)", "70599": "Padscheibe Legno 41 cm 16\"", "70602": "Bodenglanz 750 ml", "70610": "Sebo Staubsauger 370 Evo", "70629": "Sprühex  750 ml", "70637": "Sani-Flow Rohrreiniger 1 Liter", "70653": "Eimer 6 Liter Rot, Blau, Gelb Vermop", "70696": "Scandic Mono Halter 120 cm", "70750": "Scandic Mono Ceran 120 cm", "70769": "Kehrset", "70882": "Müllsack 120 l T70 Blau", "70912": "Besen Elaston 50 cm Rot", "70939": "Magic Maxx 5l (2)", "70947": "Bendurol Forte", "70963": "Buzil BUZ Defoam G478 1l (12)", "70971": "Easy Glide Unger 1 Liter", "71011": "Eilfix Almo-Ex 1l (12) Steinreiniger", "71021": "Isi Maxx", "71056": "Taski Jontec Tensol F3c 1l (6)", "71080": "Sprintmop Basic 40cm", "71099": "VM Sprint Plus 50cm", "71102": "Alustiel 140cm", "71111": "VM Gerätehalterung Varietta I #5541", "71112": "VM Equipe Gummi f. Stielhalter 20-28mm", "71129": "Aufnehmer weiß", "71153": "Handsprüher Neutral", "71196": "Kiehl Trend 5l (2)", "71218": "3M Superpad 406mm 16\" grün", "71234": "Besen Arenga 40 cm", "71250": "Bad-Putzer blau oder gelb", "71255": "3M Scotch-Brite Pflegeschwamm grün/weiß(10)", "71277": "Brittex-Tuch Lochtuch PVA natur 35x40cm", "71285": "Eimer 5 Liter", "71293": "Baueimer schwarz 12 Liter", "71307": "Sigella 10 Liter", "71315": "VM Halter 80cm (5) #0083", "71331": "VM Sprint Plus 40cm", "71333": "Staubwedel Synthetik 126cm 3-farbig Teleskopstiel", "71358": "VM Feuchtwischmop Basic 60cm", "71366": "Feuchtwisch-Bezug 80 cm Basic Vermop", "71374": "Feuchtwisch-Bezug 110 cm", "71382": "Feuchtwisch-Bezug 130 cm", "71404": "Fensterwischer 35 cm", "71412": "Fensterwischer 45cm", "71420": "Ung. Wischerschiene S 55cm", "71439": "Einwasch-Träger (Fell-Halter) 45cm", "71455": "Fell 45 cm Vermop", "71471": "Lobacare SportCare 10l", "71498": "Gummi Wischer 40 cm Beco", "71535": "Handschuh Lightweight S Vil.", "71536": "Handschuh Lightweight M Vil.", "71537": "Handschuh Lightweight L Vil.", "71538": "Vil LightWeight\" beige Gr.XL", "71552": "Drucksprüher Floortop", "71555": "Wasserschieber Holz 40cm", "71579": "Buzil G440 1l", "71587": "Tempex Ultra 10l", "71595": "Saugtüten Jetvac", "71633": "Handfeger Arenga", "71668": "Handspachtel mit Holzgriff", "71676": "Professional System3 Ariel 20l", "71684": "Besenstiel Beco Holz", "71692": "Professional System4 Ariel 20l", "71706": "Hygiene Beutel per 100 Stk.", "71714": "Kehrblech", "71722": "HM Bacillol Tissues 100Tü (12)", "71749": "Leder im Fell", "71781": "Magnetic Wischer", "71840": "Twister Pad grün 534mm  21\" (2)", "71870": "Müllsack 120 l Blau", "71871": "Abfallsack 120l 60my schwarz", "71889": "Unimagic 1 Liter", "71927": "3M Superpad 203mm 8\" rot (10)", "71935": "Padscheibe grün 310mm  12\"", "71943": "Maxx Into Citrus 2* 1l (12)", "71951": "Incidin Plus 2l (3)", "71978": "3M Superpad 406mm 16\" schwarz", "71994": "3M Superpad 406mm 16\" rot (5)", "72021": "Halbschuh Riyoyo Größe 10", "72028": "Into Citrus 10l", "72036": "Molkereibürste Nylon", "72044": "Dopomat", "72052": "Padscheibe 46 cm Schwarz 18\"", "72060": "Somat Spezial-Salz1,2kg Pack", "72095": "Stielbürsten Kunststoff Haug", "72096": "HOLZSTIEL 1,4 M OHNE GEWINDE", "72109": "Ung. Trim 10+1 10cm", "72115": "Dip n Clean Handball Harzentferner 5L", "72141": "Sterillium Classic", "72168": "CC-Parkett u. Kork Glanz 750ml", "72176": "Padscheibe 33 cm blau 13\"", "72184": "Saugtüten Cleanfix S10", "72214": "Teleskopstange 2 Meter", "72222": "Teleskopstange 4m", "72230": "CC-Parkett-/Korkreiniger 750ml", "72249": "Milizid Citro 1l", "72265": "Super-Pad Janex rot 530mm/21\"", "72273": "Kiehl Dopomat-brillant 10l", "72281": "Super-Pad Janex rot 460mm/18\" Innenloch 228mm", "72303": "HM Sterillium Virugard 500ml", "72346": "Vollpflege 750ml Pallmann", "72350": "Milizid Lemonfresh 1l", "72362": "Taski Jontec 300 F4a 1l (6)", "72365": "Buzil Planta Bucasan Hit P921 1l", "72370": "Saugtüten Nilco S20 10 Stück", "72400": "Fahrwagen Einfach", "72419": "WC-Papier Weiß 2-lagig", "72439": "VM Sprint Mop White Magic 40cm", "72443": "Hängewarnschild Vermop", "72449": "Into Citrus 1l", "72478": "VM Sprint Mop White Magic 50cm", "72494": "Wischer / Schrubber 30 cm Beco weiß 30cm Wischer Beco 30cm", "72508": "Wischer / Schrubber 40 cm Beco", "72510": "Maxx Into Active 1l", "72555": "Wasserschieber Holz 50cm", "72567": "Prisma Steinprotektor 5 Liter", "72575": "Indur Maxx 1l (12)", "72576": "Maxx Indur S 1l", "72577": "Easy Quick A Konzentrat 1l", "72591": "Feuchtwisch-Halter 160cm", "72656": "Ariel System 1 flüssig 20l", "72664": "Desifor Forte AF", "72699": "Wassereinfüllhilfe Vermop", "72710": "Fahrwagen Doppel", "72729": "Pilotenjacke blau", "72737": "DSC Compact Tabs 5in1 Pack", "72788": "Staubbiene", "72818": "Haushaltsrollen", "72834": "Mili Caribic 200ml (12)", "72877": "Mistral 1 Liter", "72885": "Feuchtwisch-Bezug 50 cm Brush", "72907": "Müllbeutel 60 - 80 l weiß", "72915": "Handpad grün", "72958": "Streusalz 50 Kg", "72966": "Ung. Wischergummi soft 35cm", "72974": "Ung. Wischergummi soft 45cm", "72982": "Ung. Wischergummi soft 55cm", "73008": "Milly Allzweckreiniger 1 Liter", "73032": "VM Presse VK4", "73059": "Bacollol AF", "73075": "Padscheibe 46 cm Blau 18\"", "73091": "Padscheibe 460mm weiß 18\"", "73113": "Amidol 500ml", "73122": "Hitachi Schlauch", "73123": "Hitachi Verlängerungsrohr", "73125": "Tana Tanex vivaceram 5l", "73149": "Feuchtwisch-Bezug 40cm Ceran", "73210": "Schaumsprühkopf Bode", "73211": "Schirocco Basic 5l (2)", "73245": "WC-Garnitur Topf-Form (30)", "73253": "Heizkörperbürste U-Form 37cm", "73261": "Urinalbürste", "73288": "Vacu-Fresh 10Btl. à 5g (10)", "73334": "HM Einmalpumpe langer Auslauf 500ml", "73350": "Schirocco Clean 1l", "73380": "Novo Pen-Off 200ml (12)+ Schreibtischreiniger", "73385": "Novo Pen-Off 500ml", "73423": "Herren Latzhosen Brüggershemke", "73431": "Herren Jacke Übergang", "73450": "Herren Latzhose Dipasch", "73466": "Bendurol Maxx", "73467": "Maxx Bendurol 2 5l", "73512": "Tuklar", "73555": "Heizkörperbürste 75cm (10)", "73566": "Kodiak Sanitär 5l", "73598": "SamoLind 100ml (12)", "73628": "SamoGlove 100ml (12)", "73644": "VM Presseneinlage #886510", "73679": "Grizzly Unterhaltsreiniger 5 Liter", "73714": "CimoCid Sensitive 1l (6)", "73725": "Steinglanz P323 1 Liter", "73768": "Vileda Schwamm Grün", "73814": "KC-Handtuchrolle weiß Airflex", "73822": "Conductive Star", "73849": "Fensterklingen 1 Stück", "73911": "Energy Booster 1l (12)", "73946": "Magic Oil Care 750 ml", "73954": "Spinnfegerkopf", "73989": "Saugtüten Whisper V8 10S", "74004": "Fresh Orange 500ml (6)", "74020": "Eimer Oval", "74039": "Seifencreme 500 ml", "74040": "FloorZilla daily swing 40cm blau", "74063": "Padscheibe 41cm Braun SPP", "74100": "Microfastertuch grün", "74101": "Streusalz 25 Kilogramm", "74152": "Papierhandtuch rein Natur einlagig", "74160": "VM Wringboy Eimer 15l #9590", "74187": "Besen, Arenga 50", "74195": "Besen, Mischhaar 50", "74196": "BECOnnect 2.0 Saalbesen 100cm", "74197": "Schrankfeger 130cm (10)", "74217": "Superpad 457mm 18\" rot", "74284": "Superpad 533mm 21\"weiß", "74292": "Superpad 533mm 21\" rot", "74314": "Saugtüten Sebo 360 10 Stück", "74315": "Nilco-Saugtüten S20 / S8 10er", "74316": "Sebo-Saugtüten 360/370 10er", "74317": "Micro-Hygienefilter", "74320": "Numatic Filter Pods 10Stk", "74357": "3M Superpad 505mm 20\" rot (5)", "74365": "Einwasch-Träger (Fell-Halter) 35cm", "74373": "Fell 35 cm Vermop", "74381": "Sicherheitsschuh S3", "74462": "Taski Dust Cloth 100Stk in ein Pack", "74465": "Vil Staubbindetuch 24x60cm (20)", "74470": "Atemschutzmaske FFP2", "74489": "Meiko Trapezwischer 60cm", "74497": "Dr.Schnell Handsprüher Forol 600ml", "74535": "Loba Cleaner 1 Liter", "74578": "Rapido 500ml (6)", "74586": "CC-PU-Reiniger 5l", "74594": "Quick Tric Concentrate 1l (12)", "74675": "Pad-Sch.41cm braun", "74713": "Padscheibe 410mm beige", "74756": "Haug Spachtel PP weiß", "74764": "3M Superpad 330mm 13\" rot (5)", "74837": "Lodan Maxx 5l (2)", "74888": "Floortop 10l", "74934": "Petra 1l", "74969": "Sprühköpfe gelb", "74985": "VM Warnschild (6) Rutschgefahr", "74993": "Sebo-Saugtüten G2 10er", "75019": "3M Superpad 355mm 14\" rot (5)", "75078": "Somat Klarspüler 750ml", "75082": "Vikan Easy shine kit Glasinnenreinigungset", "75124": "Persil Pulver 1,33 kg Pack", "75167": "Überlaufbürste", "75183": "Vil Padmaster eckig grau (10)", "75209": "Glasfee ECO 10l", "75221": "Papierhandtücher 2-lagig", "75222": "Tork Reflex WT weiß 20x35 M4 Wischtuch1lg 6Rllà300m Tissue M", "75280": "Floortop 1l", "75286": "Floortop ECO 10l", "75288": "Milizid ECO 1l (12)", "75289": "Milizid ECO 10l", "75329": "Handschuhe Neopren", "75337": "Perocid 1l", "75450": "Vil Handpad Heavy Duty schwarz", "75469": "Feuchtwisch-Bezug Twixter Tronic light 40cm", "75477": "Feuchtwisch-Halter Twixter 40 cm", "75507": "Putzlappen", "75510": "Putzlappen aus Baumwolle 10kg", "75523": "Überwurfschürze Gr.1-3", "75566": "CC-PU-Reiniger 750ml (6)", "75574": "Gastro Pur 10l", "75620": "Gastro Pur 1l", "75625": "Gastro Pur Eco 1l (12)", "75639": "Papiergreifzange Nifty", "75663": "Aschesammler", "75825": "Rapa Classic Vollwaschm. 20kg", "75842": "BECOnnect 2.0 Saalbesen 80cm Elaston Holzkörper roh", "75965": "Besen Mischhaar 60 cm", "75981": "Vil Micro Tuff plus blau", "76104": "WC-Bürste m.Randreiniger (100)", "76123": "Kiehl Diwa-Pronto 10l Saurer Klarspüler", "76147": "Rabbasol H4 12 Kg", "76163": "Intensivreiniger 750ml Für Holz & Kork", "76198": "CC-Vollpflege matt 750ml (6)", "76260": "Müllbeutel 60 l weiß", "76261": "Müllbeutel Premium 60 l", "76262": "Tuch gelb Grizzly", "76263": "Tuch blau  Grizzly", "76264": "Tuch rot Grizzly", "76265": "Tuch grün Grizzly", "76384": "Saugtüten Nilfisk Backum", "76422": "Saugtüten Nilco 1207 10 Stück", "76457": "Milifix 1l", "76465": "Padhalter mit Handgriff Vileda", "76473": "Fleckenpad Blau", "76481": "Alustiel Ausziehbar Vermop", "76686": "Besen Mischhaar 100 cm", "76708": "Kehrschaufel Schwarz 22cm", "76716": "3M Superpad 406mm 16\" weiß", "76740": "SamtaMed 100ml (12)", "77101": "Tana Apesin Waschmittel", "77102": "Rapa Extra desinfizierend 12kg", "77151": "Dosierkappen", "77216": "Nilco Staubsauger S8", "77232": "Handfeger", "77265": "Dreiturm Torma BAC  1l", "77267": "Easy Quick Konzentrat 1l (12)", "77283": "Sprintmop Basic 50cm", "77291": "Eimer 17 Liter Rot Vermop", "77321": "Sidol Metallpolish 250 ml", "77445": "VM Messbecher mit Skala 500ml", "77446": "Dosierbecher 500ml Dr.Schnell", "77447": "Messbecher 250ml mit Skala VM", "77448": "Messbecher 3l Dr.Schnell", "77449": "Rapido Kaugummi-Ex 500ml Spray", "77453": "Hygiene Wasserschieber 45cm", "77577": "Hitachi Papierfilterbtl. 2lg", "77658": "Griff Edelstahl Vermop", "77712": "Onemü 1l", "77716": "Easy Clean HD+  530mm /21 Zoll weiß Pad", "77717": "Easy Clean HD+ 500mm/20 zoll weiß Pad", "77718": "3M Melamin Pad 510mm 20\" Spezialpad (5)", "77720": "Milor 500ml", "77763": "Rapido 10x1kg", "77835": "Easy Quick N 1 l", "77836": "Forol 1l", "77837": "Buzil Planta Universal  P910 1l (12)", "77838": "Forol ECO 1l (12)", "77895": "Schrubber", "77941": "Milibac N", "77968": "VM Toplock Glassman (10) #2743", "77981": "Ecolab Nachfüllflasche 1l", "77992": "Müllbeutel 30 l weiß", "77993": "Müllbeutel 30 Liter 50 Stk. Premium Deiss (36021)", "77995": "Meiko Vlies-Allzwecktuch weiß", "78042": "Sanitärreiniger Scalex 10 Liter", "78077": "Fleck-ex PRO17 500ml", "78108": "Solid Safety Tough Dots", "78115": "Graffitti GR3 5 Liter", "78166": "Hygiene Wasserschieber 55cm", "78190": "Mr.Mint Bio-Geruchs-Stop 1l", "78211": "WC-Bürste PPN weiß Kunststoff, Rundkopf (100)", "78336": "Griff Lockhead Vermop", "78387": "3M Graffiti GR3000 500ml (4)", "78522": "Gelenkteil Vermop Teleskopstange", "78530": "NeomaxxGMS 10 Liter", "78557": "Sprintmop Tronic 40cm", "78565": "Damenkittel Grün", "78700": "Desifor Forte AF", "78786": "Seifencreme rose 10 l", "78840": "WC-Papier Basic 3-lagig", "78875": "Abstauber Maler-Qualität (12)", "78913": "Sator 1l (12)", "79006": "Reflex Microtuch", "79057": "Sprintmop Tronic 50cm", "79100": "CWS BestFoam Neutral 500ml", "79197": "Fleckenradierer 3M Scotch-Br.", "79219": "3M Superpad 508mm 20\" weiß", "79235": "Marmor- & Granitpolish 1 Liter", "79243": "Edelsteinseife HMK 324 1Ltr. Möller-Chemie", "79278": "Grundreiniger R155 1 Liter", "79316": "Tana Longlive Conductan", "79545": "Rabbasol", "79618": "3M Superpad 432mm 17\" rot (5)", "79642": "Superpad 432mm 17\" grün", "79677": "Handsprüher Milizid", "79715": "On Top", "79731": "Forol 10l", "79774": "Staubwedel Synthetik", "79790": "Torvan 1l", "79979": "Padscheibe 31 cm Rot 12\"", "79980": "Reshine Sport 10l (Harzentferner)", "79983": "Satin-Star", "79997": "Müllsack 1000 Liter Deiss (99095)", "80001": "Frostschutz für Scheiben 1 Ltr.", "80003": "Dr.Schnell Schaumkanone", "80007": "VM Halteklammer Kunststoff für Abfallsack #876905", "80011": "Liebelt Geschirrhandtuch", "80021": "Taski Jontec Luna F2d 5Ltr.", "80024": "Woca Ölrefresher natur 2,5 Liter", "80025": "Woca Holzbodenseife 5l (4)", "80034": "Liebelt SprühFl.sche blau Unterhaltsreiniger 600 ml", "80035": "Liebelt SprühFl.sche rot 600 ml", "80036": "Sprintmop Liebelt Grizzly blau/rot  40cm", "80037": "Liebelt Teleskopstiel 2teilig", "80038": "Liebelt FW-Halter 40cm", "80039": "Liebelt Spültuch blau/grün", "80040": "Liebelt Fenstertuch", "80043": "Edelstahlspirale 40g", "80051": "Phy Stephalen Vital 1l (10)", "80053": "CPE Überziehschuhe blau (50)", "80066": "Dreiturm Seifenspender Lavalon", "80071": "Holz-Seife 750ml (6)", "80075": "Easy Care Bangkirai", "80076": "Sprintmop Liebelt Grizzly blau/rot 50cm", "80077": "CC-Teppichreiniger 750ml (6)", "80078": "Vileda Teleskopstiel blau 50-90cm", "80080": "Hornilla Konz. 1l (12)", "80081": "Alustiel Beconnect", "80082": "Wäschenetz 40Ltr. rot Vermop", "80083": "Papier-Picker 100cm Unger Unger", "80084": "Lavidol 1l (12)", "80092": "Tempex Xtreme", "80094": "Padscheibe Melamin 406mm 16' 3M Padscheibe Melamin 41cm 3M", "80095": "Tempex XPRESS 10l Hochleistungsgrundreiniger", "80096": "Gummi Wischer 50cm Beco", "80100": "Einmalhandschu. Nitril Gr.S", "80102": "Padscheiben grün 46cm3M", "80104": "Padscheibe rot 381 mm 15\" 3M", "80110": "T-Shirt", "80111": "Nitras Textil-Warnweste neongelb", "80115": "Herren Bundhose Dipasch", "80116": "Damen Kasack Dipasch weiß", "80120": "Schutzbrille 17,5x7cm (20x10)", "80121": "Puro Schutzbrille (25x12)", "80122": "Vil.Teleskopstiel blau 100-180cm blau Vil.Teleskopstiel blau", "80123": "Vollpflege matt 5 Liter Vollpflege matt 5 Ltr.", "80129": "Neutralreiniger Pallmann", "80132": "Maxx Magic 2 1l (12)", "80133": "Maxx Magic 2  5 Liter", "80134": "Milizid Lemonfresh 10l", "80135": "Maxx Magic S 1l", "80142": "Pad Super rot 21' für 53 u.55cm", "80144": "Liebelt FW-Halter 50cm", "80145": "Sanierer Waschmaschine 1 Liter", "80147": "Glasfaserstiel", "80149": "Sweatshirt Dipasch alle Größen", "80152": "Grizzly Desinfektion 1 Ltr. AFZ", "80158": "Saugtüten Kärcher NT561 ECO Kärcher", "80161": "Latzhosen Dipasch Dipasch", "80501": "Perocid 10l", "80506": "Fl.mingo Stream Jeikner 150cm", "80508": "Sauba Steckdosenbürste UNO blau/grau", "80513": "Forsan 1l (12)", "80518": "Maxx Indur S 1l", "80519": "Maxx Brial S 1 Liter Ecolab", "80520": "Incidin Pro 2 Liter", "80523": "On Top Samt", "80530": "Sprintmop Progressive 50cm", "80531": "Bendurol Ultra 5 Ltr. Benduro-Ultra 5 Ltr.", "80533": "Kiehl Torvan Konz. 10l", "80534": "Rapa Plus Desinf. Professionell 20kg+", "80539": "Rapa-Plus 20 Kg. Dr. Schnell Rapa-Plus 20 KG. Waschmittel Dr", "80540": "Sprintmop Progressive 40cm", "80542": "Kiehl Powerfix-Gel 1l (6)", "80545": "Unger Fell grün 45cm Monsoon", "80546": "Saugtüten Kärcher T12/1", "80547": "Pad-Gitterleinen 3M 406mm 100", "80549": "Tempex-Ultra 10 Ltr.", "80551": "Parkett & Korkglanz 5 Ltr. Parkett & Korkglanz 5 Ltr.", "80552": "TOPCare Matt 10l", "80553": "Saugtüten Nilco Micro", "80555": "Vileda Staubmop Synthetik 60cm", "80556": "Vileda Staubmop Klapphalter 60cm", "80562": "Mistral Wood 1 Liter Dr. Schnell", "80564": "Schirocco Clean 10 Ltr.", "80574": "Schirocco Forte 10l", "80577": "Levante 1l", "80578": "Levante Eco 10l", "80580": "FW.Bezüge Vileda Base Micro 50cm Vileda", "80583": "Grillmaster 600 ml Buzil", "80589": "Baumwollhanschuhe Handschuh Stoff", "80592": "Ulmanol D 10 Ltr. Fa. Scheck, Ulm", "80593": "Padscheiben grün 53cm 21'", "80594": "Ariel System 7 flüssig 20l", "80595": "Ariel System 8 flüssig 20l", "80597": "CWS BestCreamStandard 500 ml", "80598": "Forolfee 500ml (6)", "80612": "Vileda Alustiel Clip blau 150cm", "80615": "CimoCid Sensitive", "80620": "Desifor One Flächendesinf.", "80622": "Desifor A 10l", "80623": "Levante 10l", "80627": "Mundschutz weiss u. blau verschiedene Lieferanten", "80628": "Dosierpumpe Dr. Schnell für 10 Ltr. Kanister Desinfektionrei", "80629": "Lobacare Parkettöl 1 Liter", "80630": "HM Dismozon Plus", "80632": "Copex 10 Liter", "80634": "Micro Schutzanzug Tector Schutzanzug", "80638": "Melamin Combo Pad 13'' 325 mm grau/weiß  Fa. Weber", "80641": "Aktivin RubStar Handwaschpaste 1000ml", "80642": "Aktivin PuraSkin Waschlotion 1000 ml", "80645": "TopCare Floorfit 10 Liter", "80646": "Handsprüher Lavidol weiss", "80647": "Nilco S8", "80648": "Desifor Plexifee 500 ml", "80649": "Bioline Müllbeutel 30l 500x600 natur 20stk", "80652": "Mehrwegbehälter Blau  54Liter", "80655": "Handsprüher Levante", "80656": "CleanMotion Werkstattreiniger 1 Liter", "80657": "Melamin Combo Pad 530mm 21' grau-weiß", "80661": "Rabbasol Autoschaumwäsche", "80664": "Makita Saugtüten für", "80671": "Vileda Base Loop Blau 40cm", "80672": "Enteiserspray 500ml", "80675": "Milifix  10 Ltr.", "80678": "bestfour Geräteentkalker 500ml", "80684": "Handtuchrolle 2 Lg. Katrin  Classic", "80685": "Scandic Teleskopstiel Vermop", "80686": "Juwex Pad Diamant 510 mm 20''", "80688": "Reinigungsw. Varietta Plus2", "80691": "Milifix-Ultra  1 Ltr.", "80692": "Sprintmop Tronic light 40cm", "80693": "SprintmopTronic light 50cm", "80695": "Pad Microfaser Glit 406mm 16' weiss", "80698": "Reinigungsw. Varietta", "80702": "Saugschlauch  S8 / S20", "80703": "Kehrgarnitur 20cm mit Lippe", "80705": "Berry Neutralreiniger 1Liter", "80706": "Lemon Neutralreiniger mit duft", "80708": "Mehrweg-Stapelbehälter mit Klappdeckel 56 Liter", "80710": "Haug Alustiel 145cm PHB blaue Kappe", "80711": "Haug Wasserschieber 62cm Kunststoff", "80712": "Bodensaugdüse Nilco S8 / S20", "80713": "Stoko Estesol Classic 1 Ltr.", "80714": "KCP Scott Control Slim 1 lg", "80716": "Augenspülflasche Plum 500ml.", "80717": "Mehrweg-Stapelbehälter mit Klappdeckel 77 Liter", "80718": "Etikettenhalter für Mehrwegbehälter", "80719": "Milizid Cool Breeze 1l", "80722": "Nilco Saugrohr S8 schwarz Metall", "80803": "Milizid Cool Breeze 10l", "81100": "Einmalhandschuhe Nitril Gr.M", "81110": "Einmalhandschu. Nitril Gr.M", "81111": "Einmalhandschu. Nitril Gr.L", "81599": "Fahrwagen Mistral Sprint", "82100": "Einmalhandschuhe Nitril Gr. L", "82102": "Samolind Sensitive 2in1", "82105": "Kareima Bezug 50cm", "82106": "Pad SSP Plus braun 432mm 17\"", "82712": "Bioline Müllbeutel 20l", "83100": "Einmalhandschu. Nitril Gr.XL", "84607": "Gummi-Schürze 90x120cm 500my"};
+const nameMap = {"FloorZilla daily swing 40cm rot": "8020", "Taski Sani Mouldout 750ml": "54466", "Haug Spezialbürste Borsti weiß": "61055", "Haug WC Bürste weiß 40cm": "61119", "VM Sprint Brush Progressive 50 cm grau/weiß": "62107", "Vil \"Universal\" grün Gr.S(50)": "70014", "Vil \"Universal\" grün Gr.M (50)": "70015", "Vil \"Universal\" grün Gr.L (50)": "70016", "Gummihandschuh Heavyweight Gr.S Vileda Latexhandschuh Robust": "70017", "Gummihandschuh Heavyweight Gr.M Vileda Latexhandschuh Robust": "70018", "Vil \"HeavyWeight\" grün Gr.L": "70019", "Handschuh Heim & Haus Gr.L Vileda": "70023", "Glasfee 1l": "70025", "Glasfee ECO 1l (12)": "70026", "Saugtüten Nilco IC215 10 Stk.": "70033", "Muril Schmutzbrecher 10l": "70092", "Milizid Citro 10l": "70181", "Themodur-Satina 5 Liter": "70211", "Copex Grundreiniger 1 Liter": "70238", "CC-R1000 750ml": "70300", "Rabbasol Spezial 10 Liter": "70335", "Müllsack 120 l weiß": "70343", "Attila Krustenbrecher 2x1l": "70351", "Procur Konzentrat 1 Liter": "70386", "Gliz Metallic": "70408", "Kiehl Eloxa prima 750ml (6)": "70432", "Milostar 500ml": "70467", "3m Superpad 508mm 20\" grün": "70475", "Kiehl Parketto-Clean-Konz. 1l": "70491", "R 1000 10l": "70513", "Forex Intensivreiniger 1l (12)": "70580", "Padscheibe Legno 41 cm 16\"": "70599", "Bodenglanz 750 ml": "70602", "Sebo Staubsauger 370 Evo": "70610", "Sprühex  750 ml": "70629", "Sani-Flow Rohrreiniger 1 Liter": "70637", "Eimer 6 Liter Rot, Blau, Gelb Vermop": "70653", "Scandic Mono Halter 120 cm": "70696", "Scandic Mono Ceran 120 cm": "70750", "Kehrset": "70769", "Müllsack 120 l T70 Blau": "70882", "Besen Elaston 50 cm Rot": "70912", "Magic Maxx 5l (2)": "70939", "Bendurol Forte": "70947", "Buzil BUZ Defoam G478 1l (12)": "70963", "Easy Glide Unger 1 Liter": "70971", "Eilfix Almo-Ex 1l (12) Steinreiniger": "71011", "Isi Maxx": "71021", "Taski Jontec Tensol F3c 1l (6)": "71056", "Sprintmop Basic 40cm": "71080", "VM Sprint Plus 50cm": "71099", "Alustiel 140cm": "71102", "VM Gerätehalterung Varietta I #5541": "71111", "VM Equipe Gummi f. Stielhalter 20-28mm": "71112", "Aufnehmer weiß": "71129", "Handsprüher Neutral": "71153", "Kiehl Trend 5l (2)": "71196", "3M Superpad 406mm 16\" grün": "71218", "Besen Arenga 40 cm": "71234", "Bad-Putzer blau oder gelb": "71250", "3M Scotch-Brite Pflegeschwamm grün/weiß(10)": "71255", "Brittex-Tuch Lochtuch PVA natur 35x40cm": "71277", "Eimer 5 Liter": "71285", "Baueimer schwarz 12 Liter": "71293", "Sigella 10 Liter": "71307", "VM Halter 80cm (5) #0083": "71315", "VM Sprint Plus 40cm": "71331", "Staubwedel Synthetik 126cm 3-farbig Teleskopstiel": "71333", "VM Feuchtwischmop Basic 60cm": "71358", "Feuchtwisch-Bezug 80 cm Basic Vermop": "71366", "Feuchtwisch-Bezug 110 cm": "71374", "Feuchtwisch-Bezug 130 cm": "71382", "Fensterwischer 35 cm": "71404", "Fensterwischer 45cm": "71412", "Ung. Wischerschiene S 55cm": "71420", "Einwasch-Träger (Fell-Halter) 45cm": "71439", "Fell 45 cm Vermop": "71455", "Lobacare SportCare 10l": "71471", "Gummi Wischer 40 cm Beco": "71498", "Handschuh Lightweight S Vil.": "71535", "Handschuh Lightweight M Vil.": "71536", "Handschuh Lightweight L Vil.": "71537", "Vil LightWeight\" beige Gr.XL": "71538", "Drucksprüher Floortop": "71552", "Wasserschieber Holz 40cm": "71555", "Buzil G440 1l": "71579", "Tempex Ultra 10l": "71587", "Saugtüten Jetvac": "71595", "Handfeger Arenga": "71633", "Handspachtel mit Holzgriff": "71668", "Professional System3 Ariel 20l": "71676", "Besenstiel Beco Holz": "71684", "Professional System4 Ariel 20l": "71692", "Hygiene Beutel per 100 Stk.": "71706", "Kehrblech": "71714", "HM Bacillol Tissues 100Tü (12)": "71722", "Leder im Fell": "71749", "Magnetic Wischer": "71781", "Twister Pad grün 534mm  21\" (2)": "71840", "Müllsack 120 l Blau": "71870", "Abfallsack 120l 60my schwarz": "71871", "Unimagic 1 Liter": "71889", "3M Superpad 203mm 8\" rot (10)": "71927", "Padscheibe grün 310mm  12\"": "71935", "Maxx Into Citrus 2* 1l (12)": "71943", "Incidin Plus 2l (3)": "71951", "3M Superpad 406mm 16\" schwarz": "71978", "3M Superpad 406mm 16\" rot (5)": "71994", "Halbschuh Riyoyo Größe 10": "72021", "Into Citrus 10l": "72028", "Molkereibürste Nylon": "72036", "Dopomat": "72044", "Padscheibe 46 cm Schwarz 18\"": "72052", "Somat Spezial-Salz1,2kg Pack": "72060", "Stielbürsten Kunststoff Haug": "72095", "HOLZSTIEL 1,4 M OHNE GEWINDE": "72096", "Ung. Trim 10+1 10cm": "72109", "Dip n Clean Handball Harzentferner 5L": "72115", "Sterillium Classic": "72141", "CC-Parkett u. Kork Glanz 750ml": "72168", "Padscheibe 33 cm blau 13\"": "72176", "Saugtüten Cleanfix S10": "72184", "Teleskopstange 2 Meter": "72214", "Teleskopstange 4m": "72222", "CC-Parkett-/Korkreiniger 750ml": "72230", "Milizid Citro 1l": "72249", "Super-Pad Janex rot 530mm/21\"": "72265", "Kiehl Dopomat-brillant 10l": "72273", "Super-Pad Janex rot 460mm/18\" Innenloch 228mm": "72281", "HM Sterillium Virugard 500ml": "72303", "Vollpflege 750ml Pallmann": "72346", "Milizid Lemonfresh 1l": "72350", "Taski Jontec 300 F4a 1l (6)": "72362", "Buzil Planta Bucasan Hit P921 1l": "72365", "Saugtüten Nilco S20 10 Stück": "72370", "Fahrwagen Einfach": "72400", "WC-Papier Weiß 2-lagig": "72419", "VM Sprint Mop White Magic 40cm": "72439", "Hängewarnschild Vermop": "72443", "Into Citrus 1l": "72449", "VM Sprint Mop White Magic 50cm": "72478", "Wischer / Schrubber 30 cm Beco weiß 30cm Wischer Beco 30cm": "72494", "Wischer / Schrubber 40 cm Beco": "72508", "Maxx Into Active 1l": "72510", "Wasserschieber Holz 50cm": "72555", "Prisma Steinprotektor 5 Liter": "72567", "Indur Maxx 1l (12)": "72575", "Maxx Indur S 1l": "80518", "Easy Quick A Konzentrat 1l": "72577", "Feuchtwisch-Halter 160cm": "72591", "Ariel System 1 flüssig 20l": "72656", "Desifor Forte AF": "78700", "Wassereinfüllhilfe Vermop": "72699", "Fahrwagen Doppel": "72710", "Pilotenjacke blau": "72729", "DSC Compact Tabs 5in1 Pack": "72737", "Staubbiene": "72788", "Haushaltsrollen": "72818", "Mili Caribic 200ml (12)": "72834", "Mistral 1 Liter": "72877", "Feuchtwisch-Bezug 50 cm Brush": "72885", "Müllbeutel 60 - 80 l weiß": "72907", "Handpad grün": "72915", "Streusalz 50 Kg": "72958", "Ung. Wischergummi soft 35cm": "72966", "Ung. Wischergummi soft 45cm": "72974", "Ung. Wischergummi soft 55cm": "72982", "Milly Allzweckreiniger 1 Liter": "73008", "VM Presse VK4": "73032", "Bacollol AF": "73059", "Padscheibe 46 cm Blau 18\"": "73075", "Padscheibe 460mm weiß 18\"": "73091", "Amidol 500ml": "73113", "Hitachi Schlauch": "73122", "Hitachi Verlängerungsrohr": "73123", "Tana Tanex vivaceram 5l": "73125", "Feuchtwisch-Bezug 40cm Ceran": "73149", "Schaumsprühkopf Bode": "73210", "Schirocco Basic 5l (2)": "73211", "WC-Garnitur Topf-Form (30)": "73245", "Heizkörperbürste U-Form 37cm": "73253", "Urinalbürste": "73261", "Vacu-Fresh 10Btl. à 5g (10)": "73288", "HM Einmalpumpe langer Auslauf 500ml": "73334", "Schirocco Clean 1l": "73350", "Novo Pen-Off 200ml (12)+ Schreibtischreiniger": "73380", "Novo Pen-Off 500ml": "73385", "Herren Latzhosen Brüggershemke": "73423", "Herren Jacke Übergang": "73431", "Herren Latzhose Dipasch": "73450", "Bendurol Maxx": "73466", "Maxx Bendurol 2 5l": "73467", "Tuklar": "73512", "Heizkörperbürste 75cm (10)": "73555", "Kodiak Sanitär 5l": "73566", "SamoLind 100ml (12)": "73598", "SamoGlove 100ml (12)": "73628", "VM Presseneinlage #886510": "73644", "Grizzly Unterhaltsreiniger 5 Liter": "73679", "CimoCid Sensitive 1l (6)": "73714", "Steinglanz P323 1 Liter": "73725", "Vileda Schwamm Grün": "73768", "KC-Handtuchrolle weiß Airflex": "73814", "Conductive Star": "73822", "Fensterklingen 1 Stück": "73849", "Energy Booster 1l (12)": "73911", "Magic Oil Care 750 ml": "73946", "Spinnfegerkopf": "73954", "Saugtüten Whisper V8 10S": "73989", "Fresh Orange 500ml (6)": "74004", "Eimer Oval": "74020", "Seifencreme 500 ml": "74039", "FloorZilla daily swing 40cm blau": "74040", "Padscheibe 41cm Braun SPP": "74063", "Microfastertuch grün": "74100", "Streusalz 25 Kilogramm": "74101", "Papierhandtuch rein Natur einlagig": "74152", "VM Wringboy Eimer 15l #9590": "74160", "Besen, Arenga 50": "74187", "Besen, Mischhaar 50": "74195", "BECOnnect 2.0 Saalbesen 100cm": "74196", "Schrankfeger 130cm (10)": "74197", "Superpad 457mm 18\" rot": "74217", "Superpad 533mm 21\"weiß": "74284", "Superpad 533mm 21\" rot": "74292", "Saugtüten Sebo 360 10 Stück": "74314", "Nilco-Saugtüten S20 / S8 10er": "74315", "Sebo-Saugtüten 360/370 10er": "74316", "Micro-Hygienefilter": "74317", "Numatic Filter Pods 10Stk": "74320", "3M Superpad 505mm 20\" rot (5)": "74357", "Einwasch-Träger (Fell-Halter) 35cm": "74365", "Fell 35 cm Vermop": "74373", "Sicherheitsschuh S3": "74381", "Taski Dust Cloth 100Stk in ein Pack": "74462", "Vil Staubbindetuch 24x60cm (20)": "74465", "Atemschutzmaske FFP2": "74470", "Meiko Trapezwischer 60cm": "74489", "Dr.Schnell Handsprüher Forol 600ml": "74497", "Loba Cleaner 1 Liter": "74535", "Rapido 500ml (6)": "74578", "CC-PU-Reiniger 5l": "74586", "Quick Tric Concentrate 1l (12)": "74594", "Pad-Sch.41cm braun": "74675", "Padscheibe 410mm beige": "74713", "Haug Spachtel PP weiß": "74756", "3M Superpad 330mm 13\" rot (5)": "74764", "Lodan Maxx 5l (2)": "74837", "Floortop 10l": "74888", "Petra 1l": "74934", "Sprühköpfe gelb": "74969", "VM Warnschild (6) Rutschgefahr": "74985", "Sebo-Saugtüten G2 10er": "74993", "3M Superpad 355mm 14\" rot (5)": "75019", "Somat Klarspüler 750ml": "75078", "Vikan Easy shine kit Glasinnenreinigungset": "75082", "Persil Pulver 1,33 kg Pack": "75124", "Überlaufbürste": "75167", "Vil Padmaster eckig grau (10)": "75183", "Glasfee ECO 10l": "75209", "Papierhandtücher 2-lagig": "75221", "Tork Reflex WT weiß 20x35 M4 Wischtuch1lg 6Rllà300m Tissue M": "75222", "Floortop 1l": "75280", "Floortop ECO 10l": "75286", "Milizid ECO 1l (12)": "75288", "Milizid ECO 10l": "75289", "Handschuhe Neopren": "75329", "Perocid 1l": "75337", "Vil Handpad Heavy Duty schwarz": "75450", "Feuchtwisch-Bezug Twixter Tronic light 40cm": "75469", "Feuchtwisch-Halter Twixter 40 cm": "75477", "Putzlappen": "75507", "Putzlappen aus Baumwolle 10kg": "75510", "Überwurfschürze Gr.1-3": "75523", "CC-PU-Reiniger 750ml (6)": "75566", "Gastro Pur 10l": "75574", "Gastro Pur 1l": "75620", "Gastro Pur Eco 1l (12)": "75625", "Papiergreifzange Nifty": "75639", "Aschesammler": "75663", "Rapa Classic Vollwaschm. 20kg": "75825", "BECOnnect 2.0 Saalbesen 80cm Elaston Holzkörper roh": "75842", "Besen Mischhaar 60 cm": "75965", "Vil Micro Tuff plus blau": "75981", "WC-Bürste m.Randreiniger (100)": "76104", "Kiehl Diwa-Pronto 10l Saurer Klarspüler": "76123", "Rabbasol H4 12 Kg": "76147", "Intensivreiniger 750ml Für Holz & Kork": "76163", "CC-Vollpflege matt 750ml (6)": "76198", "Müllbeutel 60 l weiß": "76260", "Müllbeutel Premium 60 l": "76261", "Tuch gelb Grizzly": "76262", "Tuch blau  Grizzly": "76263", "Tuch rot Grizzly": "76264", "Tuch grün Grizzly": "76265", "Saugtüten Nilfisk Backum": "76384", "Saugtüten Nilco 1207 10 Stück": "76422", "Milifix 1l": "76457", "Padhalter mit Handgriff Vileda": "76465", "Fleckenpad Blau": "76473", "Alustiel Ausziehbar Vermop": "76481", "Besen Mischhaar 100 cm": "76686", "Kehrschaufel Schwarz 22cm": "76708", "3M Superpad 406mm 16\" weiß": "76716", "SamtaMed 100ml (12)": "76740", "Tana Apesin Waschmittel": "77101", "Rapa Extra desinfizierend 12kg": "77102", "Dosierkappen": "77151", "Nilco Staubsauger S8": "77216", "Handfeger": "77232", "Dreiturm Torma BAC  1l": "77265", "Easy Quick Konzentrat 1l (12)": "77267", "Sprintmop Basic 50cm": "77283", "Eimer 17 Liter Rot Vermop": "77291", "Sidol Metallpolish 250 ml": "77321", "VM Messbecher mit Skala 500ml": "77445", "Dosierbecher 500ml Dr.Schnell": "77446", "Messbecher 250ml mit Skala VM": "77447", "Messbecher 3l Dr.Schnell": "77448", "Rapido Kaugummi-Ex 500ml Spray": "77449", "Hygiene Wasserschieber 45cm": "77453", "Hitachi Papierfilterbtl. 2lg": "77577", "Griff Edelstahl Vermop": "77658", "Onemü 1l": "77712", "Easy Clean HD+  530mm /21 Zoll weiß Pad": "77716", "Easy Clean HD+ 500mm/20 zoll weiß Pad": "77717", "3M Melamin Pad 510mm 20\" Spezialpad (5)": "77718", "Milor 500ml": "77720", "Rapido 10x1kg": "77763", "Easy Quick N 1 l": "77835", "Forol 1l": "77836", "Buzil Planta Universal  P910 1l (12)": "77837", "Forol ECO 1l (12)": "77838", "Schrubber": "77895", "Milibac N": "77941", "VM Toplock Glassman (10) #2743": "77968", "Ecolab Nachfüllflasche 1l": "77981", "Müllbeutel 30 l weiß": "77992", "Müllbeutel 30 Liter 50 Stk. Premium Deiss (36021)": "77993", "Meiko Vlies-Allzwecktuch weiß": "77995", "Sanitärreiniger Scalex 10 Liter": "78042", "Fleck-ex PRO17 500ml": "78077", "Solid Safety Tough Dots": "78108", "Graffitti GR3 5 Liter": "78115", "Hygiene Wasserschieber 55cm": "78166", "Mr.Mint Bio-Geruchs-Stop 1l": "78190", "WC-Bürste PPN weiß Kunststoff, Rundkopf (100)": "78211", "Griff Lockhead Vermop": "78336", "3M Graffiti GR3000 500ml (4)": "78387", "Gelenkteil Vermop Teleskopstange": "78522", "NeomaxxGMS 10 Liter": "78530", "Sprintmop Tronic 40cm": "78557", "Damenkittel Grün": "78565", "Seifencreme rose 10 l": "78786", "WC-Papier Basic 3-lagig": "78840", "Abstauber Maler-Qualität (12)": "78875", "Sator 1l (12)": "78913", "Reflex Microtuch": "79006", "Sprintmop Tronic 50cm": "79057", "CWS BestFoam Neutral 500ml": "79100", "Fleckenradierer 3M Scotch-Br.": "79197", "3M Superpad 508mm 20\" weiß": "79219", "Marmor- & Granitpolish 1 Liter": "79235", "Edelsteinseife HMK 324 1Ltr. Möller-Chemie": "79243", "Grundreiniger R155 1 Liter": "79278", "Tana Longlive Conductan": "79316", "Rabbasol": "79545", "3M Superpad 432mm 17\" rot (5)": "79618", "Superpad 432mm 17\" grün": "79642", "Handsprüher Milizid": "79677", "On Top": "79715", "Forol 10l": "79731", "Staubwedel Synthetik": "79774", "Torvan 1l": "79790", "Padscheibe 31 cm Rot 12\"": "79979", "Reshine Sport 10l (Harzentferner)": "79980", "Satin-Star": "79983", "Müllsack 1000 Liter Deiss (99095)": "79997", "Frostschutz für Scheiben 1 Ltr.": "80001", "Dr.Schnell Schaumkanone": "80003", "VM Halteklammer Kunststoff für Abfallsack #876905": "80007", "Liebelt Geschirrhandtuch": "80011", "Taski Jontec Luna F2d 5Ltr.": "80021", "Woca Ölrefresher natur 2,5 Liter": "80024", "Woca Holzbodenseife 5l (4)": "80025", "Liebelt SprühFl.sche blau Unterhaltsreiniger 600 ml": "80034", "Liebelt SprühFl.sche rot 600 ml": "80035", "Sprintmop Liebelt Grizzly blau/rot  40cm": "80036", "Liebelt Teleskopstiel 2teilig": "80037", "Liebelt FW-Halter 40cm": "80038", "Liebelt Spültuch blau/grün": "80039", "Liebelt Fenstertuch": "80040", "Edelstahlspirale 40g": "80043", "Phy Stephalen Vital 1l (10)": "80051", "CPE Überziehschuhe blau (50)": "80053", "Dreiturm Seifenspender Lavalon": "80066", "Holz-Seife 750ml (6)": "80071", "Easy Care Bangkirai": "80075", "Sprintmop Liebelt Grizzly blau/rot 50cm": "80076", "CC-Teppichreiniger 750ml (6)": "80077", "Vileda Teleskopstiel blau 50-90cm": "80078", "Hornilla Konz. 1l (12)": "80080", "Alustiel Beconnect": "80081", "Wäschenetz 40Ltr. rot Vermop": "80082", "Papier-Picker 100cm Unger Unger": "80083", "Lavidol 1l (12)": "80084", "Tempex Xtreme": "80092", "Padscheibe Melamin 406mm 16' 3M Padscheibe Melamin 41cm 3M": "80094", "Tempex XPRESS 10l Hochleistungsgrundreiniger": "80095", "Gummi Wischer 50cm Beco": "80096", "Einmalhandschu. Nitril Gr.S": "80100", "Padscheiben grün 46cm3M": "80102", "Padscheibe rot 381 mm 15\" 3M": "80104", "T-Shirt": "80110", "Nitras Textil-Warnweste neongelb": "80111", "Herren Bundhose Dipasch": "80115", "Damen Kasack Dipasch weiß": "80116", "Schutzbrille 17,5x7cm (20x10)": "80120", "Puro Schutzbrille (25x12)": "80121", "Vil.Teleskopstiel blau 100-180cm blau Vil.Teleskopstiel blau": "80122", "Vollpflege matt 5 Liter Vollpflege matt 5 Ltr.": "80123", "Neutralreiniger Pallmann": "80129", "Maxx Magic 2 1l (12)": "80132", "Maxx Magic 2  5 Liter": "80133", "Milizid Lemonfresh 10l": "80134", "Maxx Magic S 1l": "80135", "Pad Super rot 21' für 53 u.55cm": "80142", "Liebelt FW-Halter 50cm": "80144", "Sanierer Waschmaschine 1 Liter": "80145", "Glasfaserstiel": "80147", "Sweatshirt Dipasch alle Größen": "80149", "Grizzly Desinfektion 1 Ltr. AFZ": "80152", "Saugtüten Kärcher NT561 ECO Kärcher": "80158", "Latzhosen Dipasch Dipasch": "80161", "Perocid 10l": "80501", "Fl.mingo Stream Jeikner 150cm": "80506", "Sauba Steckdosenbürste UNO blau/grau": "80508", "Forsan 1l (12)": "80513", "Maxx Brial S 1 Liter Ecolab": "80519", "Incidin Pro 2 Liter": "80520", "On Top Samt": "80523", "Sprintmop Progressive 50cm": "80530", "Bendurol Ultra 5 Ltr. Benduro-Ultra 5 Ltr.": "80531", "Kiehl Torvan Konz. 10l": "80533", "Rapa Plus Desinf. Professionell 20kg+": "80534", "Rapa-Plus 20 Kg. Dr. Schnell Rapa-Plus 20 KG. Waschmittel Dr": "80539", "Sprintmop Progressive 40cm": "80540", "Kiehl Powerfix-Gel 1l (6)": "80542", "Unger Fell grün 45cm Monsoon": "80545", "Saugtüten Kärcher T12/1": "80546", "Pad-Gitterleinen 3M 406mm 100": "80547", "Tempex-Ultra 10 Ltr.": "80549", "Parkett & Korkglanz 5 Ltr. Parkett & Korkglanz 5 Ltr.": "80551", "TOPCare Matt 10l": "80552", "Saugtüten Nilco Micro": "80553", "Vileda Staubmop Synthetik 60cm": "80555", "Vileda Staubmop Klapphalter 60cm": "80556", "Mistral Wood 1 Liter Dr. Schnell": "80562", "Schirocco Clean 10 Ltr.": "80564", "Schirocco Forte 10l": "80574", "Levante 1l": "80577", "Levante Eco 10l": "80578", "FW.Bezüge Vileda Base Micro 50cm Vileda": "80580", "Grillmaster 600 ml Buzil": "80583", "Baumwollhanschuhe Handschuh Stoff": "80589", "Ulmanol D 10 Ltr. Fa. Scheck, Ulm": "80592", "Padscheiben grün 53cm 21'": "80593", "Ariel System 7 flüssig 20l": "80594", "Ariel System 8 flüssig 20l": "80595", "CWS BestCreamStandard 500 ml": "80597", "Forolfee 500ml (6)": "80598", "Vileda Alustiel Clip blau 150cm": "80612", "CimoCid Sensitive": "80615", "Desifor One Flächendesinf.": "80620", "Desifor A 10l": "80622", "Levante 10l": "80623", "Mundschutz weiss u. blau verschiedene Lieferanten": "80627", "Dosierpumpe Dr. Schnell für 10 Ltr. Kanister Desinfektionrei": "80628", "Lobacare Parkettöl 1 Liter": "80629", "HM Dismozon Plus": "80630", "Copex 10 Liter": "80632", "Micro Schutzanzug Tector Schutzanzug": "80634", "Melamin Combo Pad 13'' 325 mm grau/weiß  Fa. Weber": "80638", "Aktivin RubStar Handwaschpaste 1000ml": "80641", "Aktivin PuraSkin Waschlotion 1000 ml": "80642", "TopCare Floorfit 10 Liter": "80645", "Handsprüher Lavidol weiss": "80646", "Nilco S8": "80647", "Desifor Plexifee 500 ml": "80648", "Bioline Müllbeutel 30l 500x600 natur 20stk": "80649", "Mehrwegbehälter Blau  54Liter": "80652", "Handsprüher Levante": "80655", "CleanMotion Werkstattreiniger 1 Liter": "80656", "Melamin Combo Pad 530mm 21' grau-weiß": "80657", "Rabbasol Autoschaumwäsche": "80661", "Makita Saugtüten für": "80664", "Vileda Base Loop Blau 40cm": "80671", "Enteiserspray 500ml": "80672", "Milifix  10 Ltr.": "80675", "bestfour Geräteentkalker 500ml": "80678", "Handtuchrolle 2 Lg. Katrin  Classic": "80684", "Scandic Teleskopstiel Vermop": "80685", "Juwex Pad Diamant 510 mm 20''": "80686", "Reinigungsw. Varietta Plus2": "80688", "Milifix-Ultra  1 Ltr.": "80691", "Sprintmop Tronic light 40cm": "80692", "SprintmopTronic light 50cm": "80693", "Pad Microfaser Glit 406mm 16' weiss": "80695", "Reinigungsw. Varietta": "80698", "Saugschlauch  S8 / S20": "80702", "Kehrgarnitur 20cm mit Lippe": "80703", "Berry Neutralreiniger 1Liter": "80705", "Lemon Neutralreiniger mit duft": "80706", "Mehrweg-Stapelbehälter mit Klappdeckel 56 Liter": "80708", "Haug Alustiel 145cm PHB blaue Kappe": "80710", "Haug Wasserschieber 62cm Kunststoff": "80711", "Bodensaugdüse Nilco S8 / S20": "80712", "Stoko Estesol Classic 1 Ltr.": "80713", "KCP Scott Control Slim 1 lg": "80714", "Augenspülflasche Plum 500ml.": "80716", "Mehrweg-Stapelbehälter mit Klappdeckel 77 Liter": "80717", "Etikettenhalter für Mehrwegbehälter": "80718", "Milizid Cool Breeze 1l": "80719", "Nilco Saugrohr S8 schwarz Metall": "80722", "Milizid Cool Breeze 10l": "80803", "Einmalhandschuhe Nitril Gr.M": "81100", "Einmalhandschu. Nitril Gr.M": "81110", "Einmalhandschu. Nitril Gr.L": "81111", "Fahrwagen Mistral Sprint": "81599", "Einmalhandschuhe Nitril Gr. L": "82100", "Samolind Sensitive 2in1": "82102", "Kareima Bezug 50cm": "82105", "Pad SSP Plus braun 432mm 17\"": "82106", "Bioline Müllbeutel 20l": "82712", "Einmalhandschu. Nitril Gr.XL": "83100", "Gummi-Schürze 90x120cm 500my": "84607"};
+
+document.getElementById('inventurNumber').addEventListener('input', function() {
+  const num = this.value.trim();
+  if (artikelMap[num]) {
+    document.getElementById('inventurName').value = artikelMap[num];
+  }
+});
+
+document.getElementById('inventurName').addEventListener('input', function() {
+  const name = this.value.trim();
+  if (nameMap[name]) {
+    document.getElementById('inventurNumber').value = nameMap[name];
+  }
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+function filterTable() {
+  const num = document.getElementById('inventurNumber').value.trim().toLowerCase();
+  const name = document.getElementById('inventurName').value.trim().toLowerCase();
+  const rows = document.querySelectorAll('#picklist tbody tr');
+
+  rows.forEach(row => {
+    const rowNum = row.children[0].textContent.toLowerCase();
+    const rowName = row.children[1].textContent.toLowerCase();
+    const matchNum = num && rowNum.includes(num);
+    const matchName = name && rowName.includes(name);
+
+    if ((num && matchNum) || (name && matchName)) {
+      row.style.display = '';
+    } else if (num || name) {
+      row.style.display = 'none';
+    } else {
+      row.style.display = '';
+    }
+  });
+}
+
+document.getElementById('inventurNumber').addEventListener('input', filterTable);
+document.getElementById('inventurName').addEventListener('input', filterTable);
+
+document.getElementById('showAllButton').addEventListener('click', function() {
+  document.getElementById('inventurNumber').value = '';
+  document.getElementById('inventurName').value = '';
+  const rows = document.querySelectorAll('#picklist tbody tr');
+  rows.forEach(row => row.style.display = '');
+});
+</script>
+
+
+<script>
+function tryAutoAdd() {
+  const numInput = document.getElementById('inventurNumber');
+  const nameInput = document.getElementById('inventurName');
+  const qtyInput = document.getElementById('inventurQty');
+
+  const num = numInput.value.trim();
+  const name = nameInput.value.trim();
+  const qty = parseInt(qtyInput.value.trim()) || 0;
+
+  if (!num || !name || !qty || isNaN(qty)) return;
+
+  const tbody = document.querySelector('#picklist tbody');
+  let found = false;
+  Array.from(tbody.children).forEach(row => {
+    if (row.children[0].textContent === num) {
+      const input = row.children[3].querySelector('input');
+      const oldQty = parseInt(input.value) || 0;
+      const newQty = oldQty + qty;
+      input.value = newQty;
+      row.children[4].textContent = newQty - parseInt(row.children[2].textContent);
+      row.dataset.ist = newQty;
+      found = true;
+    }
+  });
+
+  if (!found) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${num}</td>
+      <td>${name}</td>
+      <td>0</td>
+      <td><input type="number" value="${qty}" min="0"></td>
+      <td>${qty}</td>
+      <td><button class="delete-btn">🗑️</button></td>
+    `;
+    tr.dataset.nummer = num;
+    tr.dataset.bezeichnung = name;
+    tr.dataset.soll = 0;
+    tr.dataset.ist = qty;
+
+    tr.querySelector('input').addEventListener('input', function() {
+      const newIst = parseInt(this.value) || 0;
+      tr.children[4].textContent = newIst - 0;
+      tr.dataset.ist = newIst;
+      saveToLocalStorage();
+    });
+
+    tr.querySelector('.delete-btn').addEventListener('click', () => {
+      tr.remove();
+      saveToLocalStorage();
+    });
+
+    tbody.insertBefore(tr, tbody.firstChild);
+    tr.classList.add('highlight');
+    tr.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  saveToLocalStorage();
+
+  // Reset filter and show all
+  numInput.value = '';
+  nameInput.value = '';
+  qtyInput.value = '';
+  document.querySelectorAll('#picklist tbody tr').forEach(row => row.style.display = '');
+}
+document.getElementById('inventurNumber').addEventListener('change', tryAutoAdd);
+document.getElementById('inventurName').addEventListener('change', tryAutoAdd);
+document.getElementById('inventurQty').addEventListener('change', tryAutoAdd);
+</script>
+
+
+<script>
+document.getElementById('excelInput').addEventListener('change', function() {
+  const file = this.files[0];
+  if (file) {
+    document.getElementById('excelFilename').textContent = "Datei: " + file.name;
+  }
+});
+</script>
+
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('Service Worker registriert'))
+      .catch(err => console.error('SW Fehler:', err));
+  }
+</script>
+
+</body>
+</html>
